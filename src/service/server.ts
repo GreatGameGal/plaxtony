@@ -1,39 +1,42 @@
 import * as lsp from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
-import * as Types from "../compiler/types";
+import * as Types from "../compiler/types.js";
 import * as util from "util";
 import * as path from "path";
-import * as fs from "fs-extra";
-import { findAncestor } from "../compiler/utils";
+import * as fs from "fs";
+import { findAncestor } from "../compiler/utils.js";
 import {
     Store,
     createTextDocumentFromFs,
     createTextDocumentFromUri,
-} from "./store";
+} from "./store.js";
 import {
     getPositionOfLineAndCharacter,
     getNodeRange,
     osNormalizePath,
-} from "./utils";
-import { AbstractProvider, createProvider } from "./provider";
-import { DiagnosticsProvider, formatDiagnosticTotal } from "./diagnostics";
-import { NavigationProvider } from "./navigation";
-import { CompletionsProvider, CompletionFunctionExpand } from "./completions";
-import { SignaturesProvider } from "./signatures";
-import { DefinitionProvider } from "./definitions";
-import { HoverProvider } from "./hover";
-import { ReferencesProvider, ReferencesConfig } from "./references";
-import { RenameProvider } from "./rename";
+} from "./utils.js";
+import { AbstractProvider, createProvider } from "./provider.js";
+import { DiagnosticsProvider, formatDiagnosticTotal } from "./diagnostics.js";
+import { NavigationProvider } from "./navigation.js";
+import {
+    CompletionsProvider,
+    CompletionFunctionExpand,
+} from "./completions.js";
+import { SignaturesProvider } from "./signatures.js";
+import { DefinitionProvider } from "./definitions.js";
+import { HoverProvider } from "./hover.js";
+import { ReferencesProvider, ReferencesConfig } from "./references.js";
+import { RenameProvider } from "./rename.js";
 import {
     SC2Archive,
     SC2Workspace,
     resolveArchiveDirectory,
     resolveArchiveDependencyList,
     findSC2ArchiveDirectories,
-} from "../sc2mod/archive";
+} from "../sc2mod/archive.js";
 import { setTimeout, clearTimeout } from "timers";
 import { URI } from "vscode-uri";
-import { logIt, logger } from "../common";
+import { logIt, logger } from "../common.js";
 
 function translateNodeKind(node: Types.Node): lsp.SymbolKind {
     switch (node.kind) {
@@ -289,7 +292,7 @@ export class Server {
 
             if (this.config.archivePath) {
                 if (path.isAbsolute(this.config.archivePath)) {
-                    if (await fs.pathExists(archivePath)) {
+                    if (fs.existsSync(archivePath)) {
                         archivePath = this.config.archivePath;
                     } else {
                         this.showErrorMessage(
@@ -307,13 +310,13 @@ export class Server {
                                     URI.parse(x.uri).fsPath,
                                     archiveOsNormalPath,
                                 );
-                                const exists = await fs.pathExists(testedPath);
+                                const exists = fs.existsSync(testedPath);
                                 if (exists) {
-                                    return await fs.realpath(testedPath);
+                                    return fs.realpathSync(testedPath);
                                 }
                             }),
                         )
-                    ).filter((x) => typeof x === "string");
+                    ).filter((x: any) => typeof x === "string");
                     if (candidates.length) {
                         archivePath = candidates[0];
                         logger.info(
@@ -399,7 +402,7 @@ export class Server {
                         URI.parse(wsFolder.uri).fsPath,
                         this.config.dataPath,
                     );
-                    if (await fs.pathExists(resolvedDataPath)) {
+                    if (fs.existsSync(resolvedDataPath)) {
                         modSources.push(resolvedDataPath);
                     }
                 }
@@ -531,8 +534,8 @@ export class Server {
             "Indexing Galaxy files..",
         );
         for (const modArchive of workspace.allArchives) {
-            for (const extSrc of await modArchive.findFiles("**/*.galaxy")) {
-                await this.syncSourceFile({
+            for (const extSrc of modArchive.findFiles("**/*.galaxy")) {
+                this.syncSourceFile({
                     document: createTextDocumentFromFs(
                         path.join(modArchive.directory, extSrc),
                     ),

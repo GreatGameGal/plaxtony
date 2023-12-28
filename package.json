@@ -3,6 +3,7 @@
 	"version": "1.10.5",
 	"description": "Static code analysis of SC2 Galaxy Script",
 	"license": "MIT",
+	"type": "module",
 	"keywords": [
 		"sc2",
 		"starcraft",
@@ -45,7 +46,6 @@
 	},
 	"dependencies": {
 		"fast-glob": "^3.3.2",
-		"fs-extra": "^11.2.0",
 		"sax": "^1.3.0",
 		"vscode-languageserver": "9.0.1",
 		"vscode-languageserver-textdocument": "^1.0.11",

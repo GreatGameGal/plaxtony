@@ -1,12 +1,12 @@
-import * as gt from "./types";
-import { SyntaxKind, SourceFile, Node, Symbol } from "./types";
+import * as gt from "./types.js";
+import { SyntaxKind, SourceFile, Node, Symbol } from "./types.js";
 import {
     forEachChild,
     isDeclarationKind,
     isContainerKind,
     getSourceFileOfNode,
-} from "./utils";
-import { IStoreSymbols } from "../service/store";
+} from "./utils.js";
+import { IStoreSymbols } from "../service/store.js";
 
 export function getDeclarationName(node: Node): string {
     switch (node.kind) {

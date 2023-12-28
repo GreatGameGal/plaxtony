@@ -1,22 +1,22 @@
-import * as gt from "../compiler/types";
-import { SourceFile } from "../compiler/types";
-import { Parser } from "../compiler/parser";
-import { S2WorkspaceMetadata } from "./s2meta";
-import { bindSourceFile, unbindSourceFile } from "../compiler/binder";
+import * as gt from "../compiler/types.js";
+import { SourceFile } from "../compiler/types.js";
+import { Parser } from "../compiler/parser.js";
+import { S2WorkspaceMetadata } from "./s2meta.js";
+import { bindSourceFile, unbindSourceFile } from "../compiler/binder.js";
 import {
     SC2Archive,
     SC2Workspace,
     openArchiveWorkspace,
     S2QualifiedFile,
-} from "../sc2mod/archive";
+} from "../sc2mod/archive.js";
 import * as lsp from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as path from "path";
-import * as fs from "fs-extra";
-import * as glob from "fast-glob";
+import * as fs from "fs";
+import glob from "fast-glob";
 import { URI } from "vscode-uri";
-import { TypeChecker } from "../compiler/checker";
-import { DataCatalogConfig, MetadataConfig } from "./server";
+import { TypeChecker } from "../compiler/checker.js";
+import { DataCatalogConfig, MetadataConfig } from "./server.js";
 
 export function createTextDocument(uri: string, text: string) {
     return TextDocument.create(uri, "galaxy", 0, text);
@@ -33,7 +33,7 @@ export function createTextDocumentFromFs(filepath: string) {
 export async function readDocumentFile(fsPath: string) {
     return createTextDocument(
         URI.file(fsPath).toString(),
-        await fs.readFile(fsPath, "utf8"),
+        fs.readFileSync(fsPath, "utf8"),
     );
 }
 
@@ -44,25 +44,23 @@ export function createTextDocumentFromUri(uri: string) {
     );
 }
 
-export async function* openSourceFilesInLocation(...srcFolders: string[]) {
-    const workspaceFolders = await Promise.all(
-        srcFolders.map(async (folder) => {
-            return {
-                folder,
-                galaxyFiles: await glob("**/*.galaxy", {
-                    cwd: folder,
-                    absolute: true,
-                    caseSensitiveMatch: false,
-                    onlyFiles: true,
-                    objectMode: false,
-                }),
-            };
-        }),
-    );
+export function* openSourceFilesInLocation(...srcFolders: string[]) {
+    const workspaceFolders = srcFolders.map((folder) => {
+        return {
+            folder,
+            galaxyFiles: glob.globSync("**/*.galaxy", {
+                cwd: folder,
+                absolute: true,
+                caseSensitiveMatch: false,
+                onlyFiles: true,
+                objectMode: false,
+            }),
+        };
+    });
 
     for (const wsFolder of workspaceFolders) {
         for (const wsFile of wsFolder.galaxyFiles) {
-            yield await readDocumentFile(wsFile);
+            yield readDocumentFile(wsFile);
         }
     }
 }

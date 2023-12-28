@@ -1,6 +1,6 @@
-import * as Types from "./types";
-import { SyntaxKind, Node, NodeArray, MutableNodeArray } from "./types";
-import { Scanner } from "./scanner";
+import * as Types from "./types.js";
+import { SyntaxKind, Node, NodeArray, MutableNodeArray } from "./types.js";
+import { Scanner } from "./scanner.js";
 import {
     getKindName,
     isModifierKind,
@@ -11,7 +11,7 @@ import {
     isReferenceKeywordKind,
     isAssignmentExpression,
     createFileDiagnostic,
-} from "./utils";
+} from "./utils.js";
 
 const enum ParsingContext {
     SourceElements,

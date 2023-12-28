@@ -1,8 +1,8 @@
 import * as lsp from "vscode-languageserver";
 import * as path from "path";
 import { URI } from "vscode-uri";
-import * as gt from "./types";
-import { isComplexTypeKind } from "../compiler/utils";
+import * as gt from "./types.js";
+import { isComplexTypeKind } from "../compiler/utils.js";
 import {
     isDeclarationKind,
     isPartOfExpression,
@@ -13,11 +13,11 @@ import {
     isComparisonOperator,
     isReferenceKeywordKind,
     findAncestorByKind,
-} from "./utils";
-import { Store, QualifiedSourceFile } from "../service/store";
-import { tokenToString } from "./scanner";
-import { declareSymbol, unbindSourceFile } from "./binder";
-import { getLineAndCharacterOfPosition } from "../service/utils";
+} from "./utils.js";
+import { Store, QualifiedSourceFile } from "../service/store.js";
+import { tokenToString } from "./scanner.js";
+import { declareSymbol, unbindSourceFile } from "./binder.js";
+import { getLineAndCharacterOfPosition } from "../service/utils.js";
 
 let nextSymbolId = 1;
 let nextNodeId = 1;
@@ -536,8 +536,6 @@ export class LiteralType extends AbstractType {
 }
 
 export class StructType extends AbstractType implements gt.StructType {
-    symbol: gt.Symbol;
-
     constructor(symbol: gt.Symbol) {
         super();
         this.flags = gt.TypeFlags.Struct;
@@ -599,7 +597,6 @@ export class SignatureMeta {
 }
 
 export class FunctionType extends AbstractType implements gt.FunctionType {
-    symbol: gt.Symbol;
     signature: SignatureMeta;
 
     constructor(symbol: gt.Symbol, signature: SignatureMeta) {

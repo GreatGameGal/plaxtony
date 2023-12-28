@@ -2,20 +2,20 @@ import "mocha";
 import * as fs from "fs";
 import * as path from "path";
 import { assert } from "chai";
-import * as tc from "../src/compiler/checker";
-import { TypeChecker } from "../src/compiler/checker";
+import * as tc from "../src/compiler/checker.js";
+import { TypeChecker } from "../src/compiler/checker.js";
 import {
     mockupStore,
     mockupTextDocument,
     mockupStoreFromDirectory,
-} from "./helpers";
+} from "./helpers.js";
 import {
     getPositionOfLineAndCharacter,
     findPrecedingToken,
     getTokenAtPosition,
-} from "../src/service/utils";
-import * as gt from "./../src/compiler/types";
-import { unbindSourceFile } from "../src/compiler/binder";
+} from "../src/service/utils.js";
+import * as gt from "./../src/compiler/types.js";
+import { unbindSourceFile } from "../src/compiler/binder.js";
 import { URI } from "vscode-uri";
 
 function getSymbolAt(

@@ -1,12 +1,12 @@
 import * as path from "path";
-import { Store, createTextDocumentFromFs } from "../service/store";
-import { openArchiveWorkspace, SC2Archive } from "../sc2mod/archive";
-import { logger } from "../common";
-import { createProvider } from "../service/provider";
+import { Store, createTextDocumentFromFs } from "../service/store.js";
+import { openArchiveWorkspace, SC2Archive } from "../sc2mod/archive.js";
+import { logger } from "../common.js";
+import { createProvider } from "../service/provider.js";
 import {
     DiagnosticsProvider,
     formatDiagnosticTotal,
-} from "../service/diagnostics";
+} from "../service/diagnostics.js";
 import { URI } from "vscode-uri";
 
 (async function () {

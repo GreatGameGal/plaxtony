@@ -1,13 +1,13 @@
-import { SourceFile } from "./../src/compiler/types";
-import { Parser } from "../src/compiler/parser";
+import { SourceFile } from "./../src/compiler/types.js";
+import { Parser } from "../src/compiler/parser.js";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
     Store,
     S2WorkspaceWatcher,
     createTextDocumentFromFs,
     openSourceFilesInLocation,
-} from "../src/service/store";
-import { SC2Workspace } from "../src/sc2mod/archive";
+} from "../src/service/store.js";
+import { SC2Workspace } from "../src/sc2mod/archive.js";
 import * as path from "path";
 import * as util from "util";
 

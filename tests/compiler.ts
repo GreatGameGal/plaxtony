@@ -1,4 +1,8 @@
-import { mockupStore, mockupSourceFile, mockupTextDocument } from "./helpers";
+import {
+    mockupStore,
+    mockupSourceFile,
+    mockupTextDocument,
+} from "./helpers.js";
 import { assert } from "chai";
 import * as fs from "fs";
 import "mocha";

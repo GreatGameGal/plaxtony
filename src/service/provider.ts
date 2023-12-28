@@ -1,4 +1,4 @@
-import { Store } from "./store";
+import { Store } from "./store.js";
 
 export abstract class AbstractProvider {
     protected store: Store;

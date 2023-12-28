@@ -3,7 +3,7 @@ import {
     SyntaxKind,
     DiagnosticMessage,
     DiagnosticCategory,
-} from "./types";
+} from "./types.js";
 
 export interface ErrorCallback {
     (message: DiagnosticMessage, pos: number, length: number): void;

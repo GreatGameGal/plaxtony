@@ -1,8 +1,8 @@
 import * as path from "path";
 import { assert } from "chai";
 import { URI } from "vscode-uri";
-import { Store } from "../src/service/store";
-import { mockupStoreFromS2Workspace } from "./helpers";
+import { Store } from "../src/service/store.js";
+import { mockupStoreFromS2Workspace } from "./helpers.js";
 
 describe("Store", () => {
     context("S2Workspace", async () => {

@@ -1,16 +1,16 @@
 import "mocha";
 import { assert } from "chai";
-import * as gt from "../src/compiler/types";
+import * as gt from "../src/compiler/types.js";
 import {
     mockupStoreFromDirectory,
     fixtureFilePath,
     mapStoreFilesByBasename,
     mockupStoreDocument,
-} from "./helpers";
-import { createProvider } from "../src/service/provider";
-import { Store } from "../src/service/store";
-import { CompletionsProvider } from "../src/service/completions";
-import { getPositionOfLineAndCharacter } from "../src/service/utils";
+} from "./helpers.js";
+import { createProvider } from "../src/service/provider.js";
+import { Store } from "../src/service/store.js";
+import { CompletionsProvider } from "../src/service/completions.js";
+import { getPositionOfLineAndCharacter } from "../src/service/utils.js";
 import * as lsp from "vscode-languageserver";
 
 function completionsContains(completions: lsp.CompletionList, name: string) {
