@@ -16,7 +16,7 @@ import {
 } from "../src/service/utils";
 import * as gt from "./../src/compiler/types";
 import { unbindSourceFile } from "../src/compiler/binder";
-import URI from "vscode-uri";
+import { URI } from "vscode-uri";
 
 function getSymbolAt(
     checker: TypeChecker,

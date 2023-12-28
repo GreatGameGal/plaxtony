@@ -7,7 +7,7 @@ import {
     DiagnosticsProvider,
     formatDiagnosticTotal,
 } from "../service/diagnostics";
-import URI from "vscode-uri";
+import { URI } from "vscode-uri";
 
 (async function () {
     const store = new Store();

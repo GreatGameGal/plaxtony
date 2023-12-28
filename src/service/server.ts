@@ -1,4 +1,4 @@
-import * as lsp from "vscode-languageserver";
+import * as lsp from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as Types from "../compiler/types";
 import * as util from "util";
@@ -32,7 +32,7 @@ import {
     findSC2ArchiveDirectories,
 } from "../sc2mod/archive";
 import { setTimeout, clearTimeout } from "timers";
-import URI from "vscode-uri";
+import { URI } from "vscode-uri";
 import { logIt, logger } from "../common";
 
 function translateNodeKind(node: Types.Node): lsp.SymbolKind {
@@ -136,7 +136,7 @@ interface PlaxtonyConfig {
 }
 
 interface DocumentUpdateRequest {
-    timer: NodeJS.Timer;
+    timer: NodeJS.Timeout;
     promise: Promise<boolean>;
     content: string;
     isDirty: boolean;
@@ -150,7 +150,7 @@ interface InitializeParams extends lsp.InitializeParams {
 }
 
 export class Server {
-    public connection: lsp.IConnection;
+    public connection: lsp.Connection;
     private store: Store = new Store();
     private diagnosticsProvider: DiagnosticsProvider;
     private navigationProvider: NavigationProvider;

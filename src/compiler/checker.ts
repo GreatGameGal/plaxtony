@@ -1,11 +1,10 @@
 import * as lsp from "vscode-languageserver";
 import * as path from "path";
-import URI from "vscode-uri";
+import { URI } from "vscode-uri";
 import * as gt from "./types";
 import { isComplexTypeKind } from "../compiler/utils";
 import {
     isDeclarationKind,
-    forEachChild,
     isPartOfExpression,
     isRightSideOfPropertyAccess,
     findAncestor,
@@ -17,13 +16,11 @@ import {
 } from "./utils";
 import { Store, QualifiedSourceFile } from "../service/store";
 import { tokenToString } from "./scanner";
-import { Printer } from "./printer";
 import { declareSymbol, unbindSourceFile } from "./binder";
 import { getLineAndCharacterOfPosition } from "../service/utils";
 
 let nextSymbolId = 1;
 let nextNodeId = 1;
-const printer = new Printer();
 
 export function getNodeId(node: gt.Node): number {
     if (!node.id) {
@@ -676,7 +673,7 @@ export class ReferenceType extends AbstractType {
         return false;
     }
 
-    public isComparableTo(target: AbstractType) {
+    public isComparableTo(target: AbstractType): boolean {
         if (target === nullType) return true;
         if (target instanceof ReferenceType && this.kind === target.kind) {
             return this.isAssignableTo(target);
@@ -838,7 +835,8 @@ export class TypeChecker {
     private getNodeLinks(node: gt.Node): gt.NodeLinks {
         const nodeId = getNodeId(node);
         return (
-            this.nodeLinks[nodeId] || (this.nodeLinks[nodeId] = { flags: 0 })
+            this.nodeLinks[nodeId] ||
+            (this.nodeLinks[nodeId] = { flags: gt.NodeCheckFlags.Unchecked })
         );
     }
 

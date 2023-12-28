@@ -445,6 +445,7 @@ export interface ComplexType extends Type {
 }
 
 export const enum NodeCheckFlags {
+    Unchecked = 0,
     TypeChecked = 1 << 0, // Node has been type checked
     ContextChecked = 1 << 1, // Contextual types have been assigned
 }

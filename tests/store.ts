@@ -1,6 +1,6 @@
 import * as path from "path";
 import { assert } from "chai";
-import Uri from "vscode-uri";
+import { URI } from "vscode-uri";
 import { Store } from "../src/service/store";
 import { mockupStoreFromS2Workspace } from "./helpers";
 
@@ -17,7 +17,7 @@ describe("Store", () => {
 
         it("docs", () => {
             store.documents.get(
-                Uri.file(
+                URI.file(
                     path.resolve(
                         path.join(
                             "tests",

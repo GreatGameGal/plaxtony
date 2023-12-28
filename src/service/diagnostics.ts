@@ -6,7 +6,7 @@ import { TypeChecker } from "../compiler/checker";
 import { unbindSourceFile } from "../compiler/binder";
 import { getLineAndCharacterOfPosition } from "./utils";
 import { logger } from "../common";
-import URI from "vscode-uri";
+import { URI } from "vscode-uri";
 import { QualifiedSourceFile } from "./store";
 
 export function formatDiagnosticTotal(summary: DiagnosticWorkspaceSummary) {
