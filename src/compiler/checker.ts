@@ -766,14 +766,6 @@ export class TypedefType extends AbstractType implements gt.TypedefType {
     }
 }
 
-function createSymbol(flags: gt.SymbolFlags, name: string): gt.Symbol {
-    const symbol = <gt.Symbol>{
-        flags: flags,
-        escapedName: name,
-    };
-    return symbol;
-}
-
 const unknownType = new UnknownType();
 const nullType = new IntrinsicType(
     gt.TypeFlags.Null | gt.TypeFlags.Nullable,
@@ -1474,12 +1466,8 @@ export class TypeChecker {
     }
 
     private checkParameterDeclaration(node: gt.ParameterDeclaration) {
-        const declType = this.checkDeclarationType(node.type);
-        const [symbol, symType] = this.checkIdentifier(node.name);
+        const [symbol] = this.checkIdentifier(node.name);
 
-        // const isNative = (<gt.FunctionDeclaration>node.parent).modifiers.some((value) => value.kind === gt.SyntaxKind.NativeKeyword);
-        // if ((<gt.FunctionDeclaration>node.parent).body || isNative) {
-        // }
         if (symbol) {
             this.checkLocalDeclaration(node, symbol);
         }
@@ -1492,7 +1480,7 @@ export class TypeChecker {
 
     private checkVariableDeclaration(node: gt.VariableDeclaration) {
         const declType = this.checkDeclarationType(node.type);
-        const [symbol, symType] = this.checkIdentifier(node.name);
+        const [symbol] = this.checkIdentifier(node.name);
 
         if (node.initializer) {
             const varType = this.getTypeFromTypeNode(node.type);
@@ -1535,8 +1523,7 @@ export class TypeChecker {
     }
 
     private checkPropertyDeclaration(node: gt.PropertyDeclaration) {
-        const declType = this.checkDeclarationType(node.type);
-        const [symbol, symType] = this.checkIdentifier(node.name);
+        const [symbol] = this.checkIdentifier(node.name);
         if (symbol) {
             this.checkLocalDeclaration(node, symbol);
         }
@@ -1668,17 +1655,15 @@ export class TypeChecker {
 
     private checkBlock(node: gt.Block) {
         let returnFound = false;
-        let returnFoundExplict = false;
         node.statements.forEach((child) => {
             this.checkSourceElement(child);
 
             switch (child.kind) {
                 case gt.SyntaxKind.ReturnStatement:
-                    returnFoundExplict = returnFound = true;
+                    returnFound = true;
                     break;
 
                 case gt.SyntaxKind.IfStatement:
-                    // if (returnFoundExplict === true) break;
                     returnFound = (<gt.IfStatement>child).hasReturn;
                     break;
             }

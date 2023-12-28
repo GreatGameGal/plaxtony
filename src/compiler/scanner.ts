@@ -446,7 +446,6 @@ export class Scanner {
     private getIdentifierToken(): SyntaxKind {
         // Reserved words are between 2 and 11 characters long and start with a lowercase letter
         let token: SyntaxKind | undefined;
-        const len = this.tokenValue.length;
         const ch = this.tokenValue.charCodeAt(0);
         if (ch >= CharacterCodes.a && ch <= CharacterCodes.z) {
             token = stringToToken(this.tokenValue);

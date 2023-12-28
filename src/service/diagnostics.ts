@@ -64,8 +64,6 @@ export interface DiagnosticWorkspaceSummary {
 export type DiagnosticsCallback = (a: string) => void;
 
 export class DiagnosticsProvider extends AbstractProvider {
-    private reporter?: DiagnosticsCallback;
-
     private translateDiagnostics(
         sourceFile: gt.SourceFile,
         origDiagnostics: gt.Diagnostic[],

@@ -7,7 +7,6 @@ import {
     getSourceFileOfNode,
 } from "./utils";
 import { IStoreSymbols } from "../service/store";
-// import { SignatureMeta, TypeChecker } from './checker';
 
 export function getDeclarationName(node: Node): string {
     switch (node.kind) {
@@ -56,22 +55,11 @@ function isDeclNodeDefined(node: gt.Declaration) {
     return false;
 }
 
-// function createSymbolTable(symbols?: ReadonlyArray<Symbol>): SymbolTable {
-//     const result = new Map<string, Symbol>() as SymbolTable;
-//     if (symbols) {
-//         for (const symbol of symbols) {
-//             result.set(symbol.escapedName, symbol);
-//         }
-//     }
-//     return result;
-// }
-
 export function declareSymbol(
     node: gt.Declaration,
     store: IStoreSymbols,
     parentSymbol?: Symbol,
 ): Symbol {
-    let scopedSymbolTable: Symbol;
     let nodeSymbol: Symbol;
     let name: string;
 

@@ -1,7 +1,7 @@
 import * as lsp from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { logIt } from "../common";
-import { SC2Archive, SC2Workspace } from "./archive";
+import { SC2Archive } from "./archive";
 import * as dtypes from "./dtypes";
 
 export type CatalogEntryFamily = dtypes.S2DataCatalogDomain;

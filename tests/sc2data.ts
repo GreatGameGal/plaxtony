@@ -12,7 +12,6 @@ import { S2WorkspaceMetadata } from "../src/service/s2meta";
 const resourcesPath = path.join("tests", "fixtures");
 
 describe("SC2Metadata", function () {
-    const dir = path.resolve(path.join(resourcesPath, "sc2-map.SC2Map"));
     let s2work: SC2Workspace;
     let s2meta: S2WorkspaceMetadata;
 

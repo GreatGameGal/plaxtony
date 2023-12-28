@@ -60,7 +60,6 @@ function translateDeclaratons(
     origDeclarations: Types.NamedDeclaration[],
 ): lsp.SymbolInformation[] {
     const symbols: lsp.SymbolInformation[] = [];
-    let kind: lsp.SymbolKind;
 
     for (let node of origDeclarations) {
         const sourceFile = <Types.SourceFile>(

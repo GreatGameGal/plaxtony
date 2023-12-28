@@ -360,7 +360,6 @@ export class Parser {
         let commaStart = -1; // Meaning the previous token was not a comma
         while (true) {
             if (this.isListElement(kind, false)) {
-                const startPos = this.scanner.getTokenPos();
                 result.push(parseElement());
                 commaStart = this.scanner.getTokenPos();
 

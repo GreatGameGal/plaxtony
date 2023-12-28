@@ -1,4 +1,4 @@
-import { SourceFile, Diagnostic } from "./../src/compiler/types";
+import { SourceFile } from "./../src/compiler/types";
 import { Parser } from "../src/compiler/parser";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import {
@@ -84,16 +84,6 @@ export function mapStoreFilesByBasename(store: Store) {
         m.set(path.basename(fullname), sourceFile);
     }
     return m;
-}
-
-function printDiagnostics(diagnostics: Diagnostic[]): string {
-    const r = <string[]>[];
-    for (const diag of diagnostics) {
-        console.log(diag);
-
-        r.push(diag.toString());
-    }
-    return r.join("\n");
 }
 
 export function dump(d: any) {

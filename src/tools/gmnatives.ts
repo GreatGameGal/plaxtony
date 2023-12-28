@@ -95,9 +95,6 @@ native void UnitInventoryDrop(unit lp_1);
                 }\`\n`,
             );
             if (curEl.returnType.type === "preset") {
-                const pValues = store.s2metadata.getConstantNamesOfPreset(
-                    curEl.returnType.typeElement.resolve(),
-                );
             }
         }
 

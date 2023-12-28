@@ -3,12 +3,7 @@ import * as lsp from "vscode-languageserver";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { assert } from "chai";
 import { DefinitionProvider } from "../../src/service/definitions";
-import {
-    mockupTextDocument,
-    mockupStore,
-    fixtureFilePath,
-    dump,
-} from "../helpers";
+import { mockupTextDocument, mockupStore, fixtureFilePath } from "../helpers";
 import { createProvider } from "../../src/service/provider";
 import { getPositionOfLineAndCharacter } from "../../src/service/utils";
 import { SC2Workspace, SC2Archive } from "../../src/sc2mod/archive";

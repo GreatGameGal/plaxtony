@@ -237,7 +237,7 @@ export class CompletionsProvider extends AbstractProvider {
         let completions = <lsp.CompletionItem[]>[];
 
         for (const document of this.store.documents.values()) {
-            for (const [name, symbol] of document.symbol.members) {
+            for (const [, symbol] of document.symbol.members) {
                 if (
                     symbol.declarations[0].kind !==
                     gt.SyntaxKind.FunctionDeclaration
@@ -355,8 +355,6 @@ export class CompletionsProvider extends AbstractProvider {
         if (!sourceFile) return;
         if (isInComment(sourceFile, position)) return;
         let currentToken = findPrecedingToken(position, sourceFile);
-        // const adjacentToken = getAdjacentToken(position, sourceFile);
-        let filterBooleanKeywords = false;
 
         // query
         let query: string = null;
@@ -402,7 +400,6 @@ export class CompletionsProvider extends AbstractProvider {
             currentToken.end >= position &&
             currentToken.parent.kind === gt.SyntaxKind.IncludeStatement
         ) {
-            const inclStmt = <gt.IncludeStatement>currentToken.parent;
             const offset = position - currentToken.pos;
             query = (<gt.StringLiteral>currentToken).text
                 .substr(1, offset - 1)
@@ -441,7 +438,6 @@ export class CompletionsProvider extends AbstractProvider {
 
                 switch (tPreset.baseType) {
                     default: {
-                        let i = 0;
                         for (const name of this.store.s2metadata.getConstantNamesOfPreset(
                             tPreset,
                         )) {

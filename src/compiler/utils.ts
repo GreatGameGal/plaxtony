@@ -602,46 +602,12 @@ export function forEachChild<T>(
     }
 }
 
-class Diagnostic implements gt.Diagnostic {
-    file?: gt.SourceFile;
-    messageText: string;
-    code: number;
-    category: gt.DiagnosticCategory;
-    tags?: lsp.DiagnosticTag[];
-    source?: string;
-
-    start?: number;
-    length?: number;
-
-    line?: number;
-    col?: number;
-
-    constructor(
-        file: gt.SourceFile,
-        code: number,
-        messageText: string,
-        start: number,
-        length: number,
-    ) {
-        this.file = file;
-        this.code = code;
-        this.messageText = messageText;
-        this.start = start;
-        this.length = length;
-    }
-
-    toString() {
-        return `${this.file?.fileName} [${this.start}]: ${this.messageText}`.toString();
-    }
-}
-
 export function createFileDiagnostic(
     file: gt.SourceFile,
     start: number,
     length: number,
     message: gt.DiagnosticMessage,
 ): gt.Diagnostic {
-    // const end = start + length;
     return <gt.Diagnostic>{
         file: file,
         code: message.code,
