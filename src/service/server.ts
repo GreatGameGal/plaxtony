@@ -1,4 +1,4 @@
-import * as lsp from "vscode-languageserver/node";
+import * as lsp from "vscode-languageserver/node.js";
 import { TextDocument } from "vscode-languageserver-textdocument";
 import * as Types from "../compiler/types.js";
 import * as util from "util";
