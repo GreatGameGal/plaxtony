@@ -51,7 +51,7 @@ export class RenameProvider extends AbstractProvider {
         };
 
         for (const loc of locations) {
-            if (typeof workspaceEdit.changes[loc.uri] === "undefined") {
+            if (typeof workspaceEdit.changes[loc.uri] === 'undefined') {
                 workspaceEdit.changes[loc.uri] = [];
             }
             workspaceEdit.changes[loc.uri].push(<lsp.TextEdit>{

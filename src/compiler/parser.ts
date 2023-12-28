@@ -80,8 +80,8 @@ export class Parser {
         // Otherwise, if we're actually speculatively parsing, then tell the scanner to do the
         // same.
         const result = isLookAhead
-        ? this.scanner.lookAhead(callback)
-        : this.scanner.tryScan(callback);
+            ? this.scanner.lookAhead(callback)
+            : this.scanner.tryScan(callback);
 
         // Debug.assert(saveContextFlags === contextFlags);
 
@@ -115,7 +115,7 @@ export class Parser {
         }
 
         if (diagnosticMessage == null) {
-            diagnosticMessage = "Expected " + getKindName(kind) + ", found " + getKindName(this.currentToken);
+            diagnosticMessage = 'Expected ' + getKindName(kind) + ', found ' + getKindName(this.currentToken);
         }
 
         this.parseErrorAtCurrentToken(diagnosticMessage);
@@ -511,17 +511,17 @@ export class Parser {
                 const mappedType = <Types.MappedTypeNode>this.createNode(SyntaxKind.MappedType, baseType.pos);
                 mappedType.returnType = baseType;
                 mappedType.typeArguments = this.parseBracketedList(ParsingContext.TypeArguments, this.parseTypeDefinition.bind(this), SyntaxKind.LessThanToken, SyntaxKind.GreaterThanToken);
-                baseType = this.finishNode(mappedType)
+                baseType = this.finishNode(mappedType);
             }
         }
 
         while (this.token() === SyntaxKind.OpenBracketToken) {
             let arrayType = <Types.ArrayTypeNode>this.createNode(SyntaxKind.ArrayType, baseType.pos);
-            this.parseExpected(SyntaxKind.OpenBracketToken)
+            this.parseExpected(SyntaxKind.OpenBracketToken);
             arrayType.size = this.parseExpectedExpression();
             arrayType.elementType = baseType;
             this.parseExpected(SyntaxKind.CloseBracketToken);
-            baseType = this.finishNode(arrayType)
+            baseType = this.finishNode(arrayType);
         }
 
         return baseType;
@@ -531,7 +531,7 @@ export class Parser {
         const param = <Types.ParameterDeclaration>this.createNode(SyntaxKind.ParameterDeclaration);
         param.type = this.parseTypeDefinition();
         param.name = this.parseIdentifier();
-        return this.finishNode(param)
+        return this.finishNode(param);
     }
 
     private parsePropertyDeclaration(): Types.PropertyDeclaration {
@@ -539,7 +539,7 @@ export class Parser {
         property.type = this.parseTypeDefinition();
         property.name = this.parseExpectedIdentifier();
         this.parseExpected(SyntaxKind.SemicolonToken);
-        return this.finishNode(property)
+        return this.finishNode(property);
     }
 
     private parseStructDeclaration(): Types.StructDeclaration {
@@ -709,7 +709,7 @@ export class Parser {
                 return this.parseIdentifier();
         }
 
-        this.parseErrorAtCurrentToken(`Invalid expression`);
+        this.parseErrorAtCurrentToken('Invalid expression');
         return this.createNode(SyntaxKind.Unknown, undefined, false);
     }
 
@@ -888,7 +888,7 @@ export class Parser {
     private parseExpression(allowAssignment: boolean = false): Types.Expression {
         const expr = this.parseAssignmentExpressionOrHigher();
         if (!allowAssignment && isAssignmentExpression(expr)) {
-            this.parseErrorAtPosition(expr.pos, expr.end - expr.pos, `Assignment expression not allowed in this context`);
+            this.parseErrorAtPosition(expr.pos, expr.end - expr.pos, 'Assignment expression not allowed in this context');
         }
         return expr;
     }

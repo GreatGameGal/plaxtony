@@ -5,115 +5,115 @@ export interface ErrorCallback {
 }
 
 const textToTokenTable: ReadonlyMap<string, SyntaxKind> = new Map([
-    ["include", SyntaxKind.IncludeKeyword],
-    ["struct", SyntaxKind.StructKeyword],
-    ["static", SyntaxKind.StaticKeyword],
-    ["const", SyntaxKind.ConstKeyword],
-    ["native", SyntaxKind.NativeKeyword],
-    ["break", SyntaxKind.BreakKeyword],
-    ["continue", SyntaxKind.ContinueKeyword],
-    ["breakpoint", SyntaxKind.BreakpointKeyword],
-    ["return", SyntaxKind.ReturnKeyword],
-    ["switch", SyntaxKind.SwitchKeyword],
+    ['include', SyntaxKind.IncludeKeyword],
+    ['struct', SyntaxKind.StructKeyword],
+    ['static', SyntaxKind.StaticKeyword],
+    ['const', SyntaxKind.ConstKeyword],
+    ['native', SyntaxKind.NativeKeyword],
+    ['break', SyntaxKind.BreakKeyword],
+    ['continue', SyntaxKind.ContinueKeyword],
+    ['breakpoint', SyntaxKind.BreakpointKeyword],
+    ['return', SyntaxKind.ReturnKeyword],
+    ['switch', SyntaxKind.SwitchKeyword],
     // ["case", SyntaxKind.CaseKeyword],
-    ["default", SyntaxKind.DefaultKeyword],
-    ["new", SyntaxKind.NewKeyword],
-    ["do", SyntaxKind.DoKeyword],
-    ["for", SyntaxKind.ForKeyword],
-    ["while", SyntaxKind.WhileKeyword],
-    ["if", SyntaxKind.IfKeyword],
-    ["else", SyntaxKind.ElseKeyword],
-    ["true", SyntaxKind.TrueKeyword],
-    ["false", SyntaxKind.FalseKeyword],
-    ["null", SyntaxKind.NullKeyword],
-    ["typedef", SyntaxKind.TypedefKeyword],
-    ["abilcmd", SyntaxKind.AbilcmdKeyword],
-    ["actor", SyntaxKind.ActorKeyword],
-    ["actorscope", SyntaxKind.ActorscopeKeyword],
-    ["aifilter", SyntaxKind.AifilterKeyword],
-    ["bank", SyntaxKind.BankKeyword],
-    ["bool", SyntaxKind.BoolKeyword],
-    ["bitmask", SyntaxKind.BitmaskKeyword],
-    ["byte", SyntaxKind.ByteKeyword],
-    ["camerainfo", SyntaxKind.CamerainfoKeyword],
-    ["char", SyntaxKind.CharKeyword],
-    ["color", SyntaxKind.ColorKeyword],
-    ["doodad", SyntaxKind.DoodadKeyword],
-    ["datetime", SyntaxKind.DatetimeKeyword],
-    ["fixed", SyntaxKind.FixedKeyword],
-    ["handle", SyntaxKind.HandleKeyword],
-    ["generichandle", SyntaxKind.GenerichandleKeyword],
-    ["effecthistory", SyntaxKind.EffecthistoryKeyword],
-    ["int", SyntaxKind.IntKeyword],
-    ["marker", SyntaxKind.MarkerKeyword],
-    ["order", SyntaxKind.OrderKeyword],
-    ["playergroup", SyntaxKind.PlayergroupKeyword],
-    ["point", SyntaxKind.PointKeyword],
-    ["region", SyntaxKind.RegionKeyword],
-    ["revealer", SyntaxKind.RevealerKeyword],
-    ["sound", SyntaxKind.SoundKeyword],
-    ["soundlink", SyntaxKind.SoundlinkKeyword],
-    ["string", SyntaxKind.StringKeyword],
-    ["text", SyntaxKind.TextKeyword],
-    ["timer", SyntaxKind.TimerKeyword],
-    ["transmissionsource", SyntaxKind.TransmissionsourceKeyword],
-    ["trigger", SyntaxKind.TriggerKeyword],
-    ["unit", SyntaxKind.UnitKeyword],
-    ["unitfilter", SyntaxKind.UnitfilterKeyword],
-    ["unitgroup", SyntaxKind.UnitgroupKeyword],
-    ["unitref", SyntaxKind.UnitrefKeyword],
-    ["void", SyntaxKind.VoidKeyword],
-    ["wave", SyntaxKind.WaveKeyword],
-    ["waveinfo", SyntaxKind.WaveinfoKeyword],
-    ["wavetarget", SyntaxKind.WavetargetKeyword],
-    ["arrayref", SyntaxKind.ArrayrefKeyword],
-    ["structref", SyntaxKind.StructrefKeyword],
-    ["funcref", SyntaxKind.FuncrefKeyword],
-    ["{", SyntaxKind.OpenBraceToken],
-    ["}", SyntaxKind.CloseBraceToken],
-    ["(", SyntaxKind.OpenParenToken],
-    [")", SyntaxKind.CloseParenToken],
-    ["[", SyntaxKind.OpenBracketToken],
-    ["]", SyntaxKind.CloseBracketToken],
-    [".", SyntaxKind.DotToken],
-    [";", SyntaxKind.SemicolonToken],
-    [",", SyntaxKind.CommaToken],
-    ["<", SyntaxKind.LessThanToken],
-    [">", SyntaxKind.GreaterThanToken],
-    ["<=", SyntaxKind.LessThanEqualsToken],
-    [">=", SyntaxKind.GreaterThanEqualsToken],
-    ["==", SyntaxKind.EqualsEqualsToken],
-    ["!=", SyntaxKind.ExclamationEqualsToken],
-    ["=>", SyntaxKind.EqualsGreaterThanToken],
-    ["+", SyntaxKind.PlusToken],
-    ["-", SyntaxKind.MinusToken],
-    ["*", SyntaxKind.AsteriskToken],
-    ["/", SyntaxKind.SlashToken],
-    ["%", SyntaxKind.PercentToken],
-    ["++", SyntaxKind.PlusPlusToken],
-    ["--", SyntaxKind.MinusMinusToken],
-    ["<<", SyntaxKind.LessThanLessThanToken],
-    [">>", SyntaxKind.GreaterThanGreaterThanToken],
-    ["&", SyntaxKind.AmpersandToken],
-    ["|", SyntaxKind.BarToken],
-    ["^", SyntaxKind.CaretToken],
-    ["!", SyntaxKind.ExclamationToken],
-    ["~", SyntaxKind.TildeToken],
-    ["&&", SyntaxKind.AmpersandAmpersandToken],
-    ["||", SyntaxKind.BarBarToken],
-    ["?", SyntaxKind.QuestionToken],
-    [":", SyntaxKind.ColonToken],
-    ["=", SyntaxKind.EqualsToken],
-    ["+=", SyntaxKind.PlusEqualsToken],
-    ["-=", SyntaxKind.MinusEqualsToken],
-    ["*=", SyntaxKind.AsteriskEqualsToken],
-    ["/=", SyntaxKind.SlashEqualsToken],
-    ["%=", SyntaxKind.PercentEqualsToken],
-    ["<<=", SyntaxKind.LessThanLessThanEqualsToken],
-    [">>=", SyntaxKind.GreaterThanGreaterThanEqualsToken],
-    ["&=", SyntaxKind.AmpersandEqualsToken],
-    ["|=", SyntaxKind.BarEqualsToken],
-    ["^=", SyntaxKind.CaretEqualsToken],
+    ['default', SyntaxKind.DefaultKeyword],
+    ['new', SyntaxKind.NewKeyword],
+    ['do', SyntaxKind.DoKeyword],
+    ['for', SyntaxKind.ForKeyword],
+    ['while', SyntaxKind.WhileKeyword],
+    ['if', SyntaxKind.IfKeyword],
+    ['else', SyntaxKind.ElseKeyword],
+    ['true', SyntaxKind.TrueKeyword],
+    ['false', SyntaxKind.FalseKeyword],
+    ['null', SyntaxKind.NullKeyword],
+    ['typedef', SyntaxKind.TypedefKeyword],
+    ['abilcmd', SyntaxKind.AbilcmdKeyword],
+    ['actor', SyntaxKind.ActorKeyword],
+    ['actorscope', SyntaxKind.ActorscopeKeyword],
+    ['aifilter', SyntaxKind.AifilterKeyword],
+    ['bank', SyntaxKind.BankKeyword],
+    ['bool', SyntaxKind.BoolKeyword],
+    ['bitmask', SyntaxKind.BitmaskKeyword],
+    ['byte', SyntaxKind.ByteKeyword],
+    ['camerainfo', SyntaxKind.CamerainfoKeyword],
+    ['char', SyntaxKind.CharKeyword],
+    ['color', SyntaxKind.ColorKeyword],
+    ['doodad', SyntaxKind.DoodadKeyword],
+    ['datetime', SyntaxKind.DatetimeKeyword],
+    ['fixed', SyntaxKind.FixedKeyword],
+    ['handle', SyntaxKind.HandleKeyword],
+    ['generichandle', SyntaxKind.GenerichandleKeyword],
+    ['effecthistory', SyntaxKind.EffecthistoryKeyword],
+    ['int', SyntaxKind.IntKeyword],
+    ['marker', SyntaxKind.MarkerKeyword],
+    ['order', SyntaxKind.OrderKeyword],
+    ['playergroup', SyntaxKind.PlayergroupKeyword],
+    ['point', SyntaxKind.PointKeyword],
+    ['region', SyntaxKind.RegionKeyword],
+    ['revealer', SyntaxKind.RevealerKeyword],
+    ['sound', SyntaxKind.SoundKeyword],
+    ['soundlink', SyntaxKind.SoundlinkKeyword],
+    ['string', SyntaxKind.StringKeyword],
+    ['text', SyntaxKind.TextKeyword],
+    ['timer', SyntaxKind.TimerKeyword],
+    ['transmissionsource', SyntaxKind.TransmissionsourceKeyword],
+    ['trigger', SyntaxKind.TriggerKeyword],
+    ['unit', SyntaxKind.UnitKeyword],
+    ['unitfilter', SyntaxKind.UnitfilterKeyword],
+    ['unitgroup', SyntaxKind.UnitgroupKeyword],
+    ['unitref', SyntaxKind.UnitrefKeyword],
+    ['void', SyntaxKind.VoidKeyword],
+    ['wave', SyntaxKind.WaveKeyword],
+    ['waveinfo', SyntaxKind.WaveinfoKeyword],
+    ['wavetarget', SyntaxKind.WavetargetKeyword],
+    ['arrayref', SyntaxKind.ArrayrefKeyword],
+    ['structref', SyntaxKind.StructrefKeyword],
+    ['funcref', SyntaxKind.FuncrefKeyword],
+    ['{', SyntaxKind.OpenBraceToken],
+    ['}', SyntaxKind.CloseBraceToken],
+    ['(', SyntaxKind.OpenParenToken],
+    [')', SyntaxKind.CloseParenToken],
+    ['[', SyntaxKind.OpenBracketToken],
+    [']', SyntaxKind.CloseBracketToken],
+    ['.', SyntaxKind.DotToken],
+    [';', SyntaxKind.SemicolonToken],
+    [',', SyntaxKind.CommaToken],
+    ['<', SyntaxKind.LessThanToken],
+    ['>', SyntaxKind.GreaterThanToken],
+    ['<=', SyntaxKind.LessThanEqualsToken],
+    ['>=', SyntaxKind.GreaterThanEqualsToken],
+    ['==', SyntaxKind.EqualsEqualsToken],
+    ['!=', SyntaxKind.ExclamationEqualsToken],
+    ['=>', SyntaxKind.EqualsGreaterThanToken],
+    ['+', SyntaxKind.PlusToken],
+    ['-', SyntaxKind.MinusToken],
+    ['*', SyntaxKind.AsteriskToken],
+    ['/', SyntaxKind.SlashToken],
+    ['%', SyntaxKind.PercentToken],
+    ['++', SyntaxKind.PlusPlusToken],
+    ['--', SyntaxKind.MinusMinusToken],
+    ['<<', SyntaxKind.LessThanLessThanToken],
+    ['>>', SyntaxKind.GreaterThanGreaterThanToken],
+    ['&', SyntaxKind.AmpersandToken],
+    ['|', SyntaxKind.BarToken],
+    ['^', SyntaxKind.CaretToken],
+    ['!', SyntaxKind.ExclamationToken],
+    ['~', SyntaxKind.TildeToken],
+    ['&&', SyntaxKind.AmpersandAmpersandToken],
+    ['||', SyntaxKind.BarBarToken],
+    ['?', SyntaxKind.QuestionToken],
+    [':', SyntaxKind.ColonToken],
+    ['=', SyntaxKind.EqualsToken],
+    ['+=', SyntaxKind.PlusEqualsToken],
+    ['-=', SyntaxKind.MinusEqualsToken],
+    ['*=', SyntaxKind.AsteriskEqualsToken],
+    ['/=', SyntaxKind.SlashEqualsToken],
+    ['%=', SyntaxKind.PercentEqualsToken],
+    ['<<=', SyntaxKind.LessThanLessThanEqualsToken],
+    ['>>=', SyntaxKind.GreaterThanGreaterThanEqualsToken],
+    ['&=', SyntaxKind.AmpersandEqualsToken],
+    ['|=', SyntaxKind.BarEqualsToken],
+    ['^=', SyntaxKind.CaretEqualsToken],
 ]);
 
 // const tokenStrings = new Map(Array.from(textToTokenTable).reverse());
@@ -274,30 +274,30 @@ export class Scanner {
     private scanEscapeSequence(): string {
         this.pos++;
         if (this.pos >= this.end) {
-            this.error("Diagnostics.Unexpected_end_of_text");
-            return "";
+            this.error('Diagnostics.Unexpected_end_of_text');
+            return '';
         }
         const ch = this.text.charCodeAt(this.pos);
         this.pos++;
         switch (ch) {
             case CharacterCodes._0:
-                return "\0";
+                return '\0';
             case CharacterCodes.b:
-                return "\b";
+                return '\b';
             case CharacterCodes.t:
-                return "\t";
+                return '\t';
             case CharacterCodes.n:
-                return "\n";
+                return '\n';
             case CharacterCodes.v:
-                return "\v";
+                return '\v';
             case CharacterCodes.f:
-                return "\f";
+                return '\f';
             case CharacterCodes.r:
-                return "\r";
+                return '\r';
             case CharacterCodes.singleQuote:
-                return "\'";
+                return '\'';
             case CharacterCodes.doubleQuote:
-                return "\"";
+                return '"';
 
             case CharacterCodes.x:
                 // '\xDD'
@@ -307,8 +307,8 @@ export class Scanner {
                     return String.fromCharCode(escapedValue);
                 }
                 else {
-                    this.error("Diagnostics.Hexadecimal_digit_expected");
-                    return "";
+                    this.error('Diagnostics.Hexadecimal_digit_expected');
+                    return '';
                 }
 
             // when encountering a LineContinuation (i.e. a backslash and a line terminator sequence),
@@ -322,7 +322,7 @@ export class Scanner {
             case CharacterCodes.lineSeparator:
             case CharacterCodes.paragraphSeparator:
                 this.error('Multiline strings not supported');
-                return "";
+                return '';
             default:
                 return String.fromCharCode(ch);
         }
@@ -331,13 +331,13 @@ export class Scanner {
     private scanString(allowEscapes = true): string {
         const quote = this.text.charCodeAt(this.pos);
         this.pos++;
-        let result = "";
+        let result = '';
         let start = this.pos;
         while (true) {
             if (this.pos >= this.end) {
                 result += this.text.substring(start, this.pos);
                 // tokenIsUnterminated = true;
-                this.error("Diagnostics.Unterminated_string_literal");
+                this.error('Diagnostics.Unterminated_string_literal');
                 break;
             }
             const ch = this.text.charCodeAt(this.pos);
@@ -348,14 +348,14 @@ export class Scanner {
             }
             if (ch === CharacterCodes.backslash && allowEscapes) {
                 result += this.text.substring(start, this.pos);
-                result += this.scanEscapeSequence()
+                result += this.scanEscapeSequence();
                 start = this.pos;
                 continue;
             }
             if (isLineBreak(ch)) {
                 result += this.text.substring(start, this.pos);
                 // tokenIsUnterminated = true;
-                this.error("Diagnostics.Unterminated_string_literal");
+                this.error('Diagnostics.Unterminated_string_literal');
                 break;
             }
             this.pos++;
@@ -381,14 +381,14 @@ export class Scanner {
                 end = this.pos;
             }
             else {
-                this.error("Diagnostics.Digit_expected");
+                this.error('Diagnostics.Digit_expected');
             }
         }
-        return "" + +(this.text.substring(start, end));
+        return '' + +(this.text.substring(start, end));
     }
 
     private scanBinaryOrOctalDigits(base: number): number {
-        console.assert(base === 2 || base === 8, "Expected either base 2 or base 8");
+        console.assert(base === 2 || base === 8, 'Expected either base 2 or base 8');
 
         let value = 0;
         // For counting number of digits; Valid binaryIntegerLiteral must have at least one binary digit following B or b.
@@ -567,10 +567,10 @@ export class Scanner {
                         this.pos += 2;
                         let value = this.scanHexDigits(1, true);
                         if (value < 0) {
-                            this.error("Diagnostics.Hexadecimal_digit_expected");
+                            this.error('Diagnostics.Hexadecimal_digit_expected');
                             value = 0;
                         }
-                        this.tokenValue = "" + value;
+                        this.tokenValue = '' + value;
                         // numericLiteralFlags = NumericLiteralFlags.HexSpecifier;
                         return this.token = SyntaxKind.NumericLiteral;
                     }
@@ -578,10 +578,10 @@ export class Scanner {
                         this.pos += 2;
                         let value = this.scanBinaryOrOctalDigits(/* base */ 2);
                         if (value < 0) {
-                            this.error("Diagnostics.Binary_digit_expected");
+                            this.error('Diagnostics.Binary_digit_expected');
                             value = 0;
                         }
-                        this.tokenValue = "" + value;
+                        this.tokenValue = '' + value;
                         // numericLiteralFlags = NumericLiteralFlags.BinarySpecifier;
                         return this.token = SyntaxKind.NumericLiteral;
                     }
@@ -589,16 +589,16 @@ export class Scanner {
                         this.pos += 2;
                         let value = this.scanBinaryOrOctalDigits(/* base */ 8);
                         if (value < 0) {
-                            this.error("Diagnostics.Octal_digit_expected");
+                            this.error('Diagnostics.Octal_digit_expected');
                             value = 0;
                         }
-                        this.tokenValue = "" + value;
+                        this.tokenValue = '' + value;
                         // numericLiteralFlags = NumericLiteralFlags.OctalSpecifier;
                         return this.token = SyntaxKind.NumericLiteral;
                     }
                     // Try to parse as an octal
                     if (this.pos + 1 < this.end && isOctalDigit(this.text.charCodeAt(this.pos + 1))) {
-                        this.tokenValue = "" + this.scanOctalDigits();
+                        this.tokenValue = '' + this.scanOctalDigits();
                         // numericLiteralFlags = NumericLiteralFlags.Octal;
                         return this.token = SyntaxKind.NumericLiteral;
                     }
@@ -743,6 +743,6 @@ export class Scanner {
     }
 
     public getLineMap(): number[] {
-       return this.lineMap;
+        return this.lineMap;
     }
 }

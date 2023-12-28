@@ -201,15 +201,15 @@ describe('Service', () => {
         });
 
         it('should properly identify bounds in nested calls', () => {
-            signature = signaturesProvider.getSignatureAt(docSignature.uri, 115)
+            signature = signaturesProvider.getSignatureAt(docSignature.uri, 115);
             assert.lengthOf(signature.signatures, 1);
             assert.equal(signature.signatures[0].label, 'string name_me(int id)');
 
-            signature = signaturesProvider.getSignatureAt(docSignature.uri, 116)
+            signature = signaturesProvider.getSignatureAt(docSignature.uri, 116);
             assert.lengthOf(signature.signatures, 1);
             assert.equal(signature.signatures[0].label, 'int randomize()');
 
-            signature = signaturesProvider.getSignatureAt(docSignature.uri, 117)
+            signature = signaturesProvider.getSignatureAt(docSignature.uri, 117);
             assert.lengthOf(signature.signatures, 1);
             assert.equal(signature.signatures[0].label, 'string name_me(int id)');
         });
@@ -217,7 +217,7 @@ describe('Service', () => {
         context('should provide signature help when cursor at: ', () => {
             it('end of binary expr, before ")"', () => {
                 assert.lengthOf(signaturesProvider.getSignatureAt(docSignature.uri, 137).signatures, 1);
-            })
+            });
             it('begining of prefix expr, after "("', () => {
                 assert.lengthOf(signaturesProvider.getSignatureAt(docSignature.uri, 152).signatures, 1);
             });
@@ -227,10 +227,10 @@ describe('Service', () => {
             });
             it('whitespace, inbetween "," and prefixed expr of numeric literal', () => {
                 assert.lengthOf(signaturesProvider.getSignatureAt(docSignature.uri, 189).signatures, 1);
-            })
+            });
             it('prefixed expr of numeric literal, inbetween operand and literal', () => {
                 assert.lengthOf(signaturesProvider.getSignatureAt(docSignature.uri, 195).signatures, 1);
-            })
+            });
         });
 
         it('funcref', () => {
@@ -260,7 +260,7 @@ describe('Service', () => {
             const info = hoverProvider.getHoverAt({textDocument: hoverDoc, position: {line: 8, character: 4}});
             assert.isDefined(info);
             const contents = <string[]>info.contents;
-            assert.isAtLeast(contents.length, 1)
+            assert.isAtLeast(contents.length, 1);
             assert.equal(contents[0], '```galaxy\nint a\n```');
             // assert.isAtLeast(contents.length, 2)
             // assert.equal(contents[1], 'parameter of *print_num*');
@@ -270,7 +270,7 @@ describe('Service', () => {
             const info = hoverProvider.getHoverAt({textDocument: hoverDoc, position: {line: 9, character: 4}});
             assert.isDefined(info);
             const contents = <string[]>info.contents;
-            assert.isAtLeast(contents.length, 1)
+            assert.isAtLeast(contents.length, 1);
             assert.equal(contents[0], '```galaxy\nstring b\n```');
             // assert.isAtLeast(contents.length, 2)
             // assert.equal(contents[1], 'local variable');
@@ -280,7 +280,7 @@ describe('Service', () => {
             const info = hoverProvider.getHoverAt({textDocument: hoverDoc, position: {line: 17, character: 14}});
             assert.isDefined(info);
             const contents = <string[]>info.contents;
-            assert.isAtLeast(contents.length, 1)
+            assert.isAtLeast(contents.length, 1);
             assert.equal(contents[0], '```galaxy\nconst int c_test = 0\n```');
             // assert.isAtLeast(contents.length, 2)
             // assert.equal(contents[1], 'global constant');
@@ -290,7 +290,7 @@ describe('Service', () => {
             const info = hoverProvider.getHoverAt({textDocument: hoverDoc, position: {line: 17, character: 4}});
             assert.isDefined(info);
             const contents = <string[]>info.contents;
-            assert.isAtLeast(contents.length, 1)
+            assert.isAtLeast(contents.length, 1);
             assert.equal(contents[0], '```galaxy\nvoid print_num(int a)\n```');
         });
 
@@ -298,9 +298,9 @@ describe('Service', () => {
             const info = hoverProvider.getHoverAt({textDocument: hoverDoc, position: {line: 18, character: 9}});
             assert.isDefined(info);
             const contents = <string[]>info.contents;
-            assert.isAtLeast(contents.length, 1)
+            assert.isAtLeast(contents.length, 1);
             assert.equal(contents[0], '```galaxy\nint a\n```');
-            assert.isAtLeast(contents.length, 2)
+            assert.isAtLeast(contents.length, 2);
             assert.equal(contents[1], 'property of `info_t`');
         });
 
@@ -308,7 +308,7 @@ describe('Service', () => {
             const info = hoverProvider.getHoverAt({textDocument: hoverDoc, position: {line: 0, character: 7}});
             assert.isDefined(info);
             const contents = <string[]>info.contents;
-            assert.isAtLeast(contents.length, 1)
+            assert.isAtLeast(contents.length, 1);
             assert.equal(contents[0], '```galaxy\nstruct info_t {\n\tint a;\n}\n```');
         });
     });

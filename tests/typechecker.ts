@@ -13,12 +13,12 @@ import URI from 'vscode-uri';
 
 function getSymbolAt(checker: TypeChecker, sourceFile: gt.SourceFile, line: number, character: number): gt.Symbol | undefined {
     const token = getTokenAtPosition(getPositionOfLineAndCharacter(sourceFile, line, character), sourceFile);
-    return checker.getSymbolAtLocation(token)
+    return checker.getSymbolAtLocation(token);
 }
 
 function getNodeTypeAt(checker: TypeChecker, sourceFile: gt.SourceFile, line: number, character: number): gt.Type | undefined {
     const token = findPrecedingToken(getPositionOfLineAndCharacter(sourceFile, line, character), sourceFile);
-    return checker.getTypeOfNode(token)
+    return checker.getTypeOfNode(token);
 }
 
 describe('Checker', () => {
@@ -34,7 +34,7 @@ describe('Checker', () => {
                 const document = mockupTextDocument('type_checker', 'typedef.galaxy');
                 store.updateDocument(document);
                 sourceFile = store.documents.get(document.uri);
-            })
+            });
 
             it('scalar' ,() => {
                 type = getNodeTypeAt(checker, sourceFile, 11, 5);
@@ -84,7 +84,7 @@ describe('Checker', () => {
                 const document = mockupTextDocument('type_checker', 'arrayref.galaxy');
                 store.updateDocument(document);
                 sourceFile = store.documents.get(document.uri);
-            })
+            });
 
             it('ref []' ,() => {
                 type = getNodeTypeAt(checker, sourceFile, 7, 5);
@@ -145,7 +145,7 @@ describe('Checker', () => {
 
             type = getNodeTypeAt(checker, sourceFile, 9, 12);
             assert.isAbove(type.flags & gt.TypeFlags.Integer, 0);
-        })
+        });
 
         it('funcref array', () => {
             let type: gt.Type;
@@ -157,7 +157,7 @@ describe('Checker', () => {
             type = getNodeTypeAt(checker, sourceFile, 2, 31);
             assert.isAbove(type.flags & gt.TypeFlags.Array, 0);
             assert.isAbove((<gt.ArrayType>type).elementType.flags & gt.TypeFlags.Reference, 0);
-        })
+        });
     });
 
     describe('Static', () => {

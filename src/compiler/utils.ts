@@ -205,7 +205,7 @@ function isNodeOrArray(a: any): boolean {
 }
 
 export function getKindName(k: number | string): string {
-    if (typeof k === "string") {
+    if (typeof k === 'string') {
         return k;
     }
 
@@ -213,7 +213,7 @@ export function getKindName(k: number | string): string {
 }
 
 export function sourceFileToJSON(file: gt.Node): string {
-    return JSON.stringify(file, (_, v) => isNodeOrArray(v) ? serializeNode(v) : v, "    ");
+    return JSON.stringify(file, (_, v) => isNodeOrArray(v) ? serializeNode(v) : v, '    ');
 
     function serializeNode(n: gt.Node): any {
         const o: any = { kind: getKindName(n.kind) };
@@ -223,25 +223,25 @@ export function sourceFileToJSON(file: gt.Node): string {
 
         for (let propertyName in n) {
             switch (propertyName) {
-                case "parent":
-                case "symbol":
-                case "locals":
-                case "localSymbol":
-                case "kind":
-                case "semanticDiagnostics":
-                case "id":
-                case "nodeCount":
-                case "symbolCount":
-                case "identifierCount":
-                case "scriptSnapshot":
+                case 'parent':
+                case 'symbol':
+                case 'locals':
+                case 'localSymbol':
+                case 'kind':
+                case 'semanticDiagnostics':
+                case 'id':
+                case 'nodeCount':
+                case 'symbolCount':
+                case 'identifierCount':
+                case 'scriptSnapshot':
                     // Blacklist of items we never put in the baseline file.
                     break;
 
-                case "originalKeywordKind":
+                case 'originalKeywordKind':
                     o[propertyName] = getKindName((<any>n)[propertyName]);
                     break;
 
-                case "flags":
+                case 'flags':
                     // Clear the flags that are produced by aggregating child values. That is ephemeral
                     // data we don't care about in the dump. We only care what the parser set directly
                     // on the AST.
@@ -251,18 +251,18 @@ export function sourceFileToJSON(file: gt.Node): string {
                     // }
                     break;
 
-                case "referenceDiagnostics":
-                case "parseDiagnostics":
+                case 'referenceDiagnostics':
+                case 'parseDiagnostics':
                     // o[propertyName] = Utils.convertDiagnostics((<any>n)[propertyName]);
                     break;
 
-                // case "nextContainer":
-                //     if (n.nextContainer) {
-                //         o[propertyName] = { kind: n.nextContainer.kind, pos: n.nextContainer.pos, end: n.nextContainer.end };
-                //     }
-                //     break;
+                    // case "nextContainer":
+                    //     if (n.nextContainer) {
+                    //         o[propertyName] = { kind: n.nextContainer.kind, pos: n.nextContainer.pos, end: n.nextContainer.end };
+                    //     }
+                    //     break;
 
-                case "text":
+                case 'text':
                     // Include 'text' field for identifiers/literals, but not for source files.
                     if (n.kind !== gt.SyntaxKind.SourceFile) {
                         o[propertyName] = (<any>n)[propertyName];
@@ -285,11 +285,11 @@ export function sourceFileToJSON(file: gt.Node): string {
  * At that point findAncestor returns undefined.
  */
 export function findAncestor<T extends gt.Node>(node: gt.Node, callback: (element: gt.Node) => element is T): T | undefined;
-export function findAncestor(node: gt.Node, callback: (element: gt.Node) => boolean | "quit"): gt.Node | undefined;
-export function findAncestor(node: gt.Node, callback: (element: gt.Node) => boolean | "quit"): gt.Node {
+export function findAncestor(node: gt.Node, callback: (element: gt.Node) => boolean | 'quit'): gt.Node | undefined;
+export function findAncestor(node: gt.Node, callback: (element: gt.Node) => boolean | 'quit'): gt.Node {
     while (node) {
         const result = callback(node);
-        if (result === "quit") {
+        if (result === 'quit') {
             return undefined;
         }
         else if (result) {

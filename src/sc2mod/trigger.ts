@@ -2,23 +2,23 @@ import * as fs from 'fs';
 import * as xml from 'xml2js';
 
 export const enum ElementFlag {
-    Native             = 1 << 1,
-    FuncAction         = 1 << 2,
-    FuncCall           = 1 << 3,
-    Event              = 1 << 4,
-    Template           = 1 << 5,
-    PresetGenConstVar  = 1 << 6,
-    PresetCustom       = 1 << 7,
-    CustomScript       = 1 << 8,
-    Operator           = 1 << 9,
-    CustomAI           = 1 << 10,
-    SubFunctions       = 1 << 11,
-    AllowBreak         = 1 << 12,
-    Hidden             = 1 << 13,
-    NoScriptPrefix     = 1 << 14,
-    Deprecated         = 1 << 15,
-    Internal           = 1 << 16,
-    Restricted         = 1 << 17,
+    Native = 1 << 1,
+    FuncAction = 1 << 2,
+    FuncCall = 1 << 3,
+    Event = 1 << 4,
+    Template = 1 << 5,
+    PresetGenConstVar = 1 << 6,
+    PresetCustom = 1 << 7,
+    CustomScript = 1 << 8,
+    Operator = 1 << 9,
+    CustomAI = 1 << 10,
+    SubFunctions = 1 << 11,
+    AllowBreak = 1 << 12,
+    Hidden = 1 << 13,
+    NoScriptPrefix = 1 << 14,
+    Deprecated = 1 << 15,
+    Internal = 1 << 16,
+    Restricted = 1 << 17,
 }
 
 export class ElementReference<T extends Element> {
@@ -89,8 +89,7 @@ export class ParameterType {
             case 'layoutframerel':
             case 'userfield':
             case 'userinstance':
-            case 'water':
-            {
+            case 'water': {
                 return 'string';
             }
 
@@ -108,18 +107,15 @@ export class ParameterType {
             case 'planet':
             case 'playercolor':
             case 'portrait':
-            case 'transmission':
-            {
+            case 'transmission': {
                 return 'int';
             }
 
-            case 'animlengthquery':
-            {
+            case 'animlengthquery': {
                 return 'generichandle';
             }
 
-            case 'targetfilter':
-            {
+            case 'targetfilter': {
                 return 'unitfilter';
             }
 
@@ -139,7 +135,11 @@ export abstract class Tag {
     name?: string;
 
     public link() {
-        return (this.libId ? this.libId + '/' : '') + (this.constructor.name + '/') + this.id;
+        return (
+            (this.libId ? this.libId + '/' : '') +
+            (this.constructor.name + '/') +
+            this.id
+        );
     }
 
     public toString() {
@@ -191,8 +191,7 @@ export class ParamDef extends Element {
         const rtype = this.type.galaxyType;
         if (this.isReference) {
             switch (rtype) {
-                case 'unit':
-                {
+                case 'unit': {
                     return 'unitref';
                     break;
                 }
@@ -237,13 +236,12 @@ export class FunctionCall extends Element {
     functionDef: ElementReference<FunctionDef>;
 }
 
-export class Category extends Element {
-};
+export class Category extends Element {}
 
 export class Label extends Element {
     icon?: string;
     color?: string;
-};
+}
 
 const ElementClasses = {
     ParamDef,
@@ -280,7 +278,7 @@ export abstract class ElementContainer {
     public findPresetValueByStr(value: string): PresetValue | undefined {
         for (const el of this.elements.values()) {
             if (!(el instanceof PresetValue)) continue;
-            if (el.value && el.value == value) {
+            if (el.value && el.value === value) {
                 return el;
             }
         }
@@ -300,7 +298,10 @@ export abstract class ElementContainer {
         return null;
     }
 
-    public findElementById<T extends Element>(id: string, type?: { new(): T ;}): T | undefined {
+    public findElementById<T extends Element>(
+        id: string,
+        type?: { new (): T },
+    ): T | undefined {
         if (type && type.name !== 'Element') {
             id = type.name + '/' + id;
         }
@@ -334,7 +335,10 @@ export type LibraryContainer = Map<string, Library>;
 
 export class TriggerStore extends ElementContainer {
     protected libraries: LibraryContainer = new Map<string, Library>();
-    protected unresolvedReferences = new Map<string, ElementReference<Element>[]>();
+    protected unresolvedReferences = new Map<
+    string,
+    ElementReference<Element>[]
+    >();
 
     public addElementReference(ref: ElementReference<Element>) {
         const link = ref.globalLink();
@@ -367,7 +371,10 @@ export class TriggerStore extends ElementContainer {
 export class XMLReader {
     protected store: TriggerStore;
 
-    private parseReference<T extends Element>(data: any, type: { new(): T }): ElementReference<T> {
+    private parseReference<T extends Element>(
+        data: any,
+        type: { new (): T },
+    ): ElementReference<T> {
         const ref = new ElementReference<T>(this.store);
         ref.id = data.$.Id;
         if (data.$.Library) {
@@ -383,7 +390,10 @@ export class XMLReader {
     private parseParam(item: any): Param {
         const element = new Param();
         if (item.FunctionCall) {
-            element.functionCall = this.parseReference(item.FunctionCall[0], FunctionCall);
+            element.functionCall = this.parseReference(
+                item.FunctionCall[0],
+                FunctionCall,
+            );
         }
         if (item.Preset) {
             element.preset = this.parseReference(item.Preset[0], PresetValue);
@@ -398,7 +408,10 @@ export class XMLReader {
             }
         }
         if (item.ValueElement) {
-            element.valueElement = this.parseReference(item.ValueElement[0], Preset);
+            element.valueElement = this.parseReference(
+                item.ValueElement[0],
+                Preset,
+            );
         }
         return element;
     }
@@ -419,7 +432,10 @@ export class XMLReader {
         const element = new FunctionCall();
         if (item.FunctionDef) {
             // TODO: check one of the void story libraries - it doesn't have FunctionDef
-            element.functionDef = this.parseReference(item.FunctionDef[0], FunctionDef);
+            element.functionDef = this.parseReference(
+                item.FunctionDef[0],
+                FunctionDef,
+            );
         }
         return element;
     }
@@ -431,7 +447,10 @@ export class XMLReader {
             element.gameType = item.GameType[0].$.Value;
         }
         if (element.type === 'preset') {
-            element.typeElement = this.parseReference(item.TypeElement[0], Preset);
+            element.typeElement = this.parseReference(
+                item.TypeElement[0],
+                Preset,
+            );
         }
         return element;
     }
@@ -456,22 +475,27 @@ export class XMLReader {
         let el: Element;
 
         switch (item.$.Type) {
-            case 'FunctionDef':
-            {
-                const func = el = new FunctionDef();
+            case 'FunctionDef': {
+                const func = (el = new FunctionDef());
 
                 func.flags |= item.FlagNative ? ElementFlag.Native : 0;
                 func.flags |= item.FlagAction ? ElementFlag.FuncAction : 0;
                 func.flags |= item.FlagCall ? ElementFlag.FuncCall : 0;
                 func.flags |= item.FlagEvent ? ElementFlag.Event : 0;
                 func.flags |= item.Template ? ElementFlag.Template : 0;
-                func.flags |= item.FlagCustomScript ? ElementFlag.CustomScript : 0;
+                func.flags |= item.FlagCustomScript
+                    ? ElementFlag.CustomScript
+                    : 0;
                 func.flags |= item.FlagOperator ? ElementFlag.Operator : 0;
                 func.flags |= item.FlagCustomAI ? ElementFlag.CustomAI : 0;
-                func.flags |= item.FlagSubFunctions ? ElementFlag.SubFunctions : 0;
+                func.flags |= item.FlagSubFunctions
+                    ? ElementFlag.SubFunctions
+                    : 0;
                 func.flags |= item.FlagAllowBreak ? ElementFlag.AllowBreak : 0;
                 func.flags |= item.FlagHidden ? ElementFlag.Hidden : 0;
-                func.flags |= item.FlagNoScriptPrefix ? ElementFlag.NoScriptPrefix : 0;
+                func.flags |= item.FlagNoScriptPrefix
+                    ? ElementFlag.NoScriptPrefix
+                    : 0;
                 func.flags |= item.Deprecated ? ElementFlag.Deprecated : 0;
                 func.flags |= item.Internal ? ElementFlag.Internal : 0;
                 func.flags |= item.FlagRestricted ? ElementFlag.Restricted : 0;
@@ -479,31 +503,39 @@ export class XMLReader {
                 if (item.Parameter) {
                     for (const param of item.Parameter) {
                         if (param.$.Type === 'Comment') continue;
-                        func.parameters.push(this.parseReference(param, ParamDef));
+                        func.parameters.push(
+                            this.parseReference(param, ParamDef),
+                        );
                     }
                 }
 
                 if (item.ReturnType) {
-                    func.returnType = this.parseParameterType(item.ReturnType[0]);
+                    func.returnType = this.parseParameterType(
+                        item.ReturnType[0],
+                    );
                 }
 
                 if (item.ScriptCode) {
                     func.scriptCode = item.ScriptCode[0];
                     const whitespace = func.scriptCode.match(/^\r?\n(\s+)/);
                     if (whitespace) {
-                        func.scriptCode = func.scriptCode.trim().replace(/\r?\n/g, '\n').replace(new RegExp('^' + whitespace[1], 'gm'), '');
+                        func.scriptCode = func.scriptCode
+                            .trim()
+                            .replace(/\r?\n/g, '\n')
+                            .replace(new RegExp('^' + whitespace[1], 'gm'), '');
                     }
                 }
 
                 if (item.EventResponse) {
                     for (const er of item.EventResponse) {
-                        func.eventResponses.push(this.parseReference(er, FunctionDef));
+                        func.eventResponses.push(
+                            this.parseReference(er, FunctionDef),
+                        );
                     }
                 }
                 break;
             }
-            case 'ParamDef':
-            {
+            case 'ParamDef': {
                 el = this.parseParamDef(item);
                 break;
             }
@@ -513,16 +545,21 @@ export class XMLReader {
             case 'FunctionCall':
                 el = this.parseFunctionCall(item);
                 break;
-            case 'Preset':
-            {
-                const preset = el = new Preset();
-                preset.flags |= item.PresetGenConstVar ? ElementFlag.PresetGenConstVar : 0;
-                preset.flags |= item.PresetCustom ? ElementFlag.PresetCustom : 0;
+            case 'Preset': {
+                const preset = (el = new Preset());
+                preset.flags |= item.PresetGenConstVar
+                    ? ElementFlag.PresetGenConstVar
+                    : 0;
+                preset.flags |= item.PresetCustom
+                    ? ElementFlag.PresetCustom
+                    : 0;
                 preset.baseType = item.BaseType[0].$.Value;
                 if (item.Item) {
                     for (const val of item.Item) {
                         if (val.$.Type !== 'PresetValue') continue;
-                        preset.values.push(this.parseReference(val, PresetValue));
+                        preset.values.push(
+                            this.parseReference(val, PresetValue),
+                        );
                     }
                 }
                 // item.$.PresetCustom
@@ -530,9 +567,8 @@ export class XMLReader {
                 // item.$.PresetAsBits
                 break;
             }
-            case 'PresetValue':
-            {
-                const presetValue = el = new PresetValue();
+            case 'PresetValue': {
+                const presetValue = (el = new PresetValue());
                 if (item.Value) {
                     presetValue.value = item.Value[0];
                 }
@@ -544,8 +580,7 @@ export class XMLReader {
             case 'Label':
                 el = this.parseLabel(item);
                 break;
-            default:
-            {
+            default: {
                 return null;
             }
         }
@@ -623,7 +658,10 @@ export class XMLReader {
         return lib;
     }
 
-    public async load(content: string, onlyLibraries: boolean = false): Promise<TriggerStore> {
+    public async load(
+        content: string,
+        onlyLibraries: boolean = false,
+    ): Promise<TriggerStore> {
         const data = await this.loadXML(content);
 
         if (data.Library) {

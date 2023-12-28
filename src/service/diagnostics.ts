@@ -117,7 +117,7 @@ export class DiagnosticsProvider extends AbstractProvider {
         };
 
         for (const itDg of result.diagnostics.values()) {
-            itDg.forEach(v => ++dsum.issuesTotal[v.category])
+            itDg.forEach(v => ++dsum.issuesTotal[v.category]);
         }
 
         return dsum;

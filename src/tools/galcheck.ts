@@ -25,5 +25,5 @@ import URI from 'vscode-uri';
     const diagProvider = createProvider(DiagnosticsProvider, store);
     console.log(formatDiagnosticTotal(diagProvider.checkFileRecursively(
         URI.file(path.resolve(process.argv[4])).toString()
-    )))
+    )));
 })();

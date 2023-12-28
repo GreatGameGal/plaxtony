@@ -45,7 +45,7 @@ function translateDeclaratons(origDeclarations: Types.NamedDeclaration[]): lsp.S
     for (let node of origDeclarations) {
         const sourceFile = <Types.SourceFile>findAncestor(node, (element: Types.Node): boolean => {
             return element.kind === Types.SyntaxKind.SourceFile;
-        })
+        });
         symbols.push({
             kind: translateNodeKind(node),
             name: node.name.name,
@@ -226,7 +226,7 @@ export class Server {
         if (this.indexing) return;
 
         const choice = await this.connection.window.showInformationMessage(
-            (`Workspace configuration has changed, reindex might be required. Would you like to do that now?`),
+            ('Workspace configuration has changed, reindex might be required. Would you like to do that now?'),
             {
                 title: 'Yes',
             },
@@ -271,14 +271,14 @@ export class Server {
                         const testedPath = path.join(URI.parse(x.uri).fsPath, archiveOsNormalPath);
                         const exists = await fs.pathExists(testedPath);
                         if (exists) {
-                            return await fs.realpath(testedPath)
+                            return await fs.realpath(testedPath);
                         }
                     }))).filter(x => typeof x === 'string');
                     if (candidates.length) {
                         archivePath = candidates[0];
                         logger.info(`Configured archivePath '${archiveOsNormalPath}' resolved to ${archivePath}`);
                         if (candidates.length > 1) {
-                            logger.info(`Complete list of candidates:`, ...candidates);
+                            logger.info('Complete list of candidates:', ...candidates);
                         }
                     }
                     else {
@@ -312,7 +312,7 @@ export class Server {
 
             if (!archivePath) {
                 const s2maps = s2archives.filter(v => path.extname(v).toLowerCase() === '.sc2map');
-                logger.info(`s2maps in workspace`, ...s2maps);
+                logger.info('s2maps in workspace', ...s2maps);
 
                 if (s2maps.length === 1) {
                     archivePath = s2maps.pop();
@@ -321,7 +321,7 @@ export class Server {
                     archivePath = s2archives.pop();
                 }
                 else {
-                    this.connection.window.showInformationMessage(`Couldn't find applicable sc2map/sc2mod in the workspace. Set it manually under "sc2galaxy.archivePath" in projects configuration.`);
+                    this.connection.window.showInformationMessage('Couldn\'t find applicable sc2map/sc2mod in the workspace. Set it manually under "sc2galaxy.archivePath" in projects configuration.');
                 }
             }
         }
@@ -345,7 +345,7 @@ export class Server {
             modSources.push(this.initParams.initializationOptions.defaultDataPath);
         }
         modSources.push(...this.config.s2mod.sources);
-        logger.info(`Workspace discovery`, ...modSources, { archivePath });
+        logger.info('Workspace discovery', ...modSources, { archivePath });
 
         // setup s2workspace
         let wsArchive: SC2Archive;
@@ -353,10 +353,10 @@ export class Server {
             const matchingWsFolder = archivePathToWsFolder.get(archivePath);
             const name = matchingWsFolder ? path.relative(URI.parse(matchingWsFolder.uri).fsPath, archivePath) : path.basename(archivePath);
             wsArchive = new SC2Archive(name, archivePath);
-            logger.info(`wsArchive`, wsArchive.name, wsArchive.directory, matchingWsFolder);
+            logger.info('wsArchive', wsArchive.name, wsArchive.directory, matchingWsFolder);
         }
 
-        this.connection.sendNotification('indexProgress', `Resolving dependencies..`);
+        this.connection.sendNotification('indexProgress', 'Resolving dependencies..');
         const fallbackDep = new SC2Archive(this.config.fallbackDependency, await resolveArchiveDirectory(this.config.fallbackDependency, modSources));
         const depLinks = await resolveArchiveDependencyList(wsArchive ? wsArchive : fallbackDep, modSources, {
             overrides: mapFromObject(this.config.s2mod.overrides),
@@ -412,7 +412,7 @@ export class Server {
         await this.store.rebuildS2Metadata(this.config.metadata, this.config.dataCatalog);
 
         // process .galaxy files in the workspace
-        this.connection.sendNotification('indexProgress', `Indexing Galaxy files..`);
+        this.connection.sendNotification('indexProgress', 'Indexing Galaxy files..');
         for (const modArchive of workspace.allArchives) {
             for (const extSrc of await modArchive.findFiles('**/*.galaxy')) {
                 await this.syncSourceFile({document: createTextDocumentFromFs(path.join(modArchive.directory, extSrc))});
@@ -496,16 +496,16 @@ export class Server {
 
         this.config = newConfig;
         switch (this.config.completion.functionExpand) {
-            case "None":
+            case 'None':
                 this.completionsProvider.config.functionExpand = CompletionFunctionExpand.None;
                 break;
-            case "Parenthesis":
+            case 'Parenthesis':
                 this.completionsProvider.config.functionExpand = CompletionFunctionExpand.Parenthesis;
                 break;
-            case "ArgumentsNull":
+            case 'ArgumentsNull':
                 this.completionsProvider.config.functionExpand = CompletionFunctionExpand.ArgumentsNull;
                 break;
-            case "ArgumentsDefault":
+            case 'ArgumentsDefault':
                 this.completionsProvider.config.functionExpand = CompletionFunctionExpand.ArgumentsDefault;
                 break;
         }
@@ -641,7 +641,7 @@ export class Server {
                 }
                 case lsp.FileChangeType.Deleted:
                 {
-                    this.store.removeDocument(x.uri)
+                    this.store.removeDocument(x.uri);
                     break;
                 }
             }

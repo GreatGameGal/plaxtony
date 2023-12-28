@@ -111,7 +111,7 @@ export class SignaturesProvider extends AbstractProvider {
                 return false;
             }
             return true;
-        })
+        });
 
         if (!callNode) {
             return null;

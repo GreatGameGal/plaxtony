@@ -37,7 +37,7 @@ describe('Completions', () => {
             assert.isFalse(completionsContains(results, 'static_a_func'));
             assert.isFalse(completionsContains(results, 'static_b_var'));
             assert.isFalse(completionsContains(results, 'static_b_func'));
-        })
+        });
 
         it('aware about own A', () => {
             const results = complProvider.getCompletionsAt(
@@ -49,7 +49,7 @@ describe('Completions', () => {
             assert.isFalse(completionsContains(results, 'static_b_var'));
             assert.isFalse(completionsContains(results, 'static_b_func'));
             assert.isTrue(completionsContains(results, 'non_static_var'));
-        })
+        });
 
         it('aware about own B', () => {
             const results = complProvider.getCompletionsAt(
@@ -61,7 +61,7 @@ describe('Completions', () => {
             assert.isFalse(completionsContains(results, 'static_a_var'));
             assert.isFalse(completionsContains(results, 'static_a_func'));
             assert.isTrue(completionsContains(results, 'non_static_var'));
-        })
+        });
     });
 
     it('incomplete variable declaration', function () {

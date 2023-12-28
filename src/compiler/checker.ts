@@ -655,15 +655,15 @@ function createSymbol(flags: gt.SymbolFlags, name: string): gt.Symbol {
 }
 
 const unknownType = new UnknownType();
-const nullType = new IntrinsicType(gt.TypeFlags.Null | gt.TypeFlags.Nullable, "null");
-const boolType = new IntrinsicType(gt.TypeFlags.Boolean, "bool");
-const trueType = new IntrinsicType(gt.TypeFlags.Boolean, "true");
-const falseType = new IntrinsicType(gt.TypeFlags.Boolean, "false");
-const stringType = new IntrinsicType(gt.TypeFlags.String | gt.TypeFlags.Nullable, "string");
-const integerType = new IntrinsicType(gt.TypeFlags.Integer, "integer");
-const byteType = new IntrinsicType(gt.TypeFlags.Byte, "byte");
-const fixedType = new IntrinsicType(gt.TypeFlags.Fixed, "fixed");
-const voidType = new IntrinsicType(gt.TypeFlags.Void, "void");
+const nullType = new IntrinsicType(gt.TypeFlags.Null | gt.TypeFlags.Nullable, 'null');
+const boolType = new IntrinsicType(gt.TypeFlags.Boolean, 'bool');
+const trueType = new IntrinsicType(gt.TypeFlags.Boolean, 'true');
+const falseType = new IntrinsicType(gt.TypeFlags.Boolean, 'false');
+const stringType = new IntrinsicType(gt.TypeFlags.String | gt.TypeFlags.Nullable, 'string');
+const integerType = new IntrinsicType(gt.TypeFlags.Integer, 'integer');
+const byteType = new IntrinsicType(gt.TypeFlags.Byte, 'byte');
+const fixedType = new IntrinsicType(gt.TypeFlags.Fixed, 'fixed');
+const voidType = new IntrinsicType(gt.TypeFlags.Void, 'void');
 
 const complexTypes = generateComplexTypes();
 
@@ -1100,21 +1100,21 @@ export class TypeChecker {
         let path = node.path.value.toLowerCase();
         let segments = path.split('.');
         if (segments.length > 1 && segments[segments.length - 1] !== 'galaxy') {
-            this.report(node.path, `Dot in a script name is not allowed, unless path ends with ".galaxy"`, gt.DiagnosticCategory.Warning);
+            this.report(node.path, 'Dot in a script name is not allowed, unless path ends with ".galaxy"', gt.DiagnosticCategory.Warning);
         }
         else {
             path = path.replace(/\.galaxy$/, '');
         }
         const qsMap = this.store.qualifiedDocuments.get(path);
         if (!qsMap) {
-            this.report(node.path, `Given filename couldn't be matched`);
+            this.report(node.path, 'Given filename couldn\'t be matched');
             return;
         }
 
         const qsFile = Array.from(qsMap.values())[0];
         const currCourceFile = <gt.SourceFile>findAncestorByKind(node, gt.SyntaxKind.SourceFile);
         if (currCourceFile === qsFile) {
-            this.report(node, `Self-include`, gt.DiagnosticCategory.Warning);
+            this.report(node, 'Self-include', gt.DiagnosticCategory.Warning);
             return;
         }
 
@@ -1221,7 +1221,7 @@ export class TypeChecker {
 
         const isConstant = node.modifiers?.some((value) => value.kind === gt.SyntaxKind.ConstKeyword);
         if (isConstant && declType instanceof TypedefType) {
-            this.report(node.type, `Constant variables cannot reference Typedefs`);
+            this.report(node.type, 'Constant variables cannot reference Typedefs');
         }
 
         if (symbol) {
@@ -1239,7 +1239,7 @@ export class TypeChecker {
                 case gt.SyntaxKind.StructrefKeyword:
                 case gt.SyntaxKind.ArrayrefKeyword:
                 {
-                    this.report(node, `Can not use arrayref/structref as a global, a field, or a return value (only as a local or a parameter).`);
+                    this.report(node, 'Can not use arrayref/structref as a global, a field, or a return value (only as a local or a parameter).');
                     break;
                 }
             }
@@ -1546,7 +1546,7 @@ export class TypeChecker {
         if ((symbol.flags & gt.SymbolFlags.Static)) {
             const sourceFile = <gt.SourceFile>findAncestorByKind(node, gt.SyntaxKind.SourceFile);
             if (symbol.parent && symbol.parent.declarations[0] !== sourceFile) {
-                this.report(node, `Attempting to reference symbol with static modifier outside the scope of its definition.`);
+                this.report(node, 'Attempting to reference symbol with static modifier outside the scope of its definition.');
             }
         }
         return [symbol, this.getTypeOfSymbol(symbol)];
@@ -1578,7 +1578,7 @@ export class TypeChecker {
                 const exprType = this.checkExpression(arg);
                 if (func.parameters.length > key) {
                     const expectedType = this.getTypeFromTypeNode(func.parameters[key].type);
-                    this.checkTypeAssignableTo(exprType, expectedType, arg)
+                    this.checkTypeAssignableTo(exprType, expectedType, arg);
                 }
             }
         }
@@ -1633,7 +1633,7 @@ export class TypeChecker {
         if (location) {
             const currentContext = <gt.NamedDeclaration>findAncestor(location, (element: gt.Node): boolean => {
                 return element.kind === gt.SyntaxKind.FunctionDeclaration || element.kind === gt.SyntaxKind.StructDeclaration;
-            })
+            });
             if (currentContext && currentContext.symbol.members.has(name)) {
                 return currentContext.symbol.members.get(name);
             }
@@ -1645,7 +1645,7 @@ export class TypeChecker {
         }
 
         if (limitScopeToDocument && !location) {
-            throw new Error(`Expected location when limitScopeToDocument is set to true`);
+            throw new Error('Expected location when limitScopeToDocument is set to true');
         }
         if (limitScopeToDocument) return;
 

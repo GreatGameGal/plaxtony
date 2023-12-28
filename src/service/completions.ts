@@ -54,7 +54,7 @@ export class CompletionsProvider extends AbstractProvider {
         let funcElement: trig.FunctionDef;
 
         if (this.store.s2metadata && this.config.functionExpand === CompletionFunctionExpand.ArgumentsDefault) {
-            funcElement = <trig.FunctionDef>this.store.s2metadata.findElementByName(decl.name.name)
+            funcElement = <trig.FunctionDef>this.store.s2metadata.findElementByName(decl.name.name);
         }
 
         function isStringLikeParam(param: trig.Param) {
@@ -82,19 +82,19 @@ export class CompletionsProvider extends AbstractProvider {
 
             if (!paramElement) {
                 if (param.type.kind === gt.SyntaxKind.IntKeyword || param.type.kind === gt.SyntaxKind.ByteKeyword) {
-                    args.push(`0`);
+                    args.push('0');
                 }
                 else if (param.type.kind === gt.SyntaxKind.FixedKeyword) {
-                    args.push(`0.0`);
+                    args.push('0.0');
                 }
                 else if (param.type.kind === gt.SyntaxKind.StringKeyword) {
-                    args.push(`""`);
+                    args.push('""');
                 }
                 else if (param.type.kind === gt.SyntaxKind.BoolKeyword) {
-                    args.push(`false`);
+                    args.push('false');
                 }
                 else {
-                    args.push(`null`);
+                    args.push('null');
                 }
             }
             else {
@@ -306,7 +306,7 @@ export class CompletionsProvider extends AbstractProvider {
             const callExpr = <gt.CallExpression>currentToken.parent;
             if (
                 callExpr.expression.kind === gt.SyntaxKind.Identifier &&
-                ["TriggerCreate", "TriggerFind"].find(x => x === (<gt.Identifier>(callExpr.expression)).name)
+                ['TriggerCreate', 'TriggerFind'].find(x => x === (<gt.Identifier>(callExpr.expression)).name)
             ) {
                 return {
                     items: this.provideTriggerHandlers(),
@@ -437,7 +437,7 @@ export class CompletionsProvider extends AbstractProvider {
         if (currentToken) {
             const currentContext = <FunctionDeclaration>findAncestor(currentToken, (element: Node): boolean => {
                 return element.kind === SyntaxKind.FunctionDeclaration;
-            })
+            });
             if (currentContext) {
                 completions = completions.concat(this.buildFromSymbolMembers(currentContext.symbol, query));
             }

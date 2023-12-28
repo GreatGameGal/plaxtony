@@ -8,7 +8,7 @@ export function getNodeChildren(node: gt.Node): gt.Node[] {
 
     forEachChild(node, (child: gt.Node) => {
         children.push(child);
-    })
+    });
 
     children = children.concat(node.syntaxTokens);
     children = children.sort((a: gt.Node, b: gt.Node): number => {
@@ -38,7 +38,7 @@ export function findPrecedingToken(position: number, sourceFile: gt.SourceFile, 
         }
 
         const children = getNodeChildren(n);
-        const candidate = findRightmostChildNodeWithTokens(children, /*exclusiveStartPosition*/ children.length);
+        const candidate = findRightmostChildNodeWithTokens(children, /* exclusiveStartPosition*/ children.length);
         return candidate && findRightmostToken(candidate);
 
     }
@@ -64,7 +64,7 @@ export function findPrecedingToken(position: number, sourceFile: gt.SourceFile, 
 
                 if (lookInPreviousChild) {
                     // actual start of the node is past the position - previous token should be at the end of previous child
-                    const candidate = findRightmostChildNodeWithTokens(children, /*exclusiveStartPosition*/ i);
+                    const candidate = findRightmostChildNodeWithTokens(children, /* exclusiveStartPosition*/ i);
                     return candidate && findRightmostToken(candidate);
                 }
                 else {
@@ -78,7 +78,7 @@ export function findPrecedingToken(position: number, sourceFile: gt.SourceFile, 
         // Try to find the rightmost token in the file without filtering.
         // Namely we are skipping the check: 'position < node.end'
         if (children.length) {
-            const candidate = findRightmostChildNodeWithTokens(children, /*exclusiveStartPosition*/ children.length);
+            const candidate = findRightmostChildNodeWithTokens(children, /* exclusiveStartPosition*/ children.length);
             return candidate && findRightmostToken(candidate);
         }
     }
@@ -174,7 +174,7 @@ export function getLineAndCharacterOfPosition(sourceFile: gt.SourceFile, pos: nu
             loc = {
                 line: i,
                 character: pos - sourceFile.lineMap[i],
-            }
+            };
             continue;
         }
         break;
@@ -192,8 +192,8 @@ export function getNodeRange(node: gt.Node): lsp.Range {
 
 // github.com/bevacqua/fuzzysearch
 export function fuzzysearch (needle: string, haystack: string) {
-    var hlen = haystack.length;
-    var nlen = needle.length;
+    let hlen = haystack.length;
+    let nlen = needle.length;
     if (nlen > hlen) {
         return false;
     }
