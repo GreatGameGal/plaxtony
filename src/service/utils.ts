@@ -1,7 +1,7 @@
-import * as path from 'path';
-import * as gt from '../compiler/types';
-import { isToken, forEachChild, getSourceFileOfNode } from '../compiler/utils';
-import * as lsp from 'vscode-languageserver';
+import * as path from "path";
+import * as gt from "../compiler/types";
+import { isToken, forEachChild, getSourceFileOfNode } from "../compiler/utils";
+import * as lsp from "vscode-languageserver";
 
 export function getNodeChildren(node: gt.Node): gt.Node[] {
     let children: gt.Node[] = [];
@@ -29,7 +29,11 @@ export function nodeHasTokens(node: gt.Node): boolean {
     return node.end - node.pos > 0;
 }
 
-export function findPrecedingToken(position: number, sourceFile: gt.SourceFile, startNode?: gt.Node): gt.Node | undefined {
+export function findPrecedingToken(
+    position: number,
+    sourceFile: gt.SourceFile,
+    startNode?: gt.Node,
+): gt.Node | undefined {
     return find(startNode || sourceFile);
 
     function findRightmostToken(n: gt.Node): gt.Node {
@@ -38,9 +42,11 @@ export function findPrecedingToken(position: number, sourceFile: gt.SourceFile, 
         }
 
         const children = getNodeChildren(n);
-        const candidate = findRightmostChildNodeWithTokens(children, /* exclusiveStartPosition*/ children.length);
+        const candidate = findRightmostChildNodeWithTokens(
+            children,
+            /* exclusiveStartPosition*/ children.length,
+        );
         return candidate && findRightmostToken(candidate);
-
     }
 
     function find(n: gt.Node): gt.Node {
@@ -59,15 +65,16 @@ export function findPrecedingToken(position: number, sourceFile: gt.SourceFile, 
             // if no - position is in the node itself so we should recurse in it.
             if (position < child.end && nodeHasTokens(child)) {
                 const start = child.pos;
-                const lookInPreviousChild =
-                    (start >= position); // cursor in the leading trivia
+                const lookInPreviousChild = start >= position; // cursor in the leading trivia
 
                 if (lookInPreviousChild) {
                     // actual start of the node is past the position - previous token should be at the end of previous child
-                    const candidate = findRightmostChildNodeWithTokens(children, /* exclusiveStartPosition*/ i);
+                    const candidate = findRightmostChildNodeWithTokens(
+                        children,
+                        /* exclusiveStartPosition*/ i,
+                    );
                     return candidate && findRightmostToken(candidate);
-                }
-                else {
+                } else {
                     // candidate should be in this node
                     return find(child);
                 }
@@ -78,13 +85,19 @@ export function findPrecedingToken(position: number, sourceFile: gt.SourceFile, 
         // Try to find the rightmost token in the file without filtering.
         // Namely we are skipping the check: 'position < node.end'
         if (children.length) {
-            const candidate = findRightmostChildNodeWithTokens(children, /* exclusiveStartPosition*/ children.length);
+            const candidate = findRightmostChildNodeWithTokens(
+                children,
+                /* exclusiveStartPosition*/ children.length,
+            );
             return candidate && findRightmostToken(candidate);
         }
     }
 
     /// finds last node that is considered as candidate for search (isCandidate(node) === true) starting from 'exclusiveStartPosition'
-    function findRightmostChildNodeWithTokens(children: gt.Node[], exclusiveStartPosition: number): gt.Node {
+    function findRightmostChildNodeWithTokens(
+        children: gt.Node[],
+        exclusiveStartPosition: number,
+    ): gt.Node {
         for (let i = exclusiveStartPosition - 1; i >= 0; i--) {
             if (nodeHasTokens(children[i])) {
                 return children[i];
@@ -93,12 +106,26 @@ export function findPrecedingToken(position: number, sourceFile: gt.SourceFile, 
     }
 }
 
-export function getTokenAtPosition(position: number, sourceFile: gt.SourceFile, preferFollowing?: boolean): gt.Node {
-    return getTokenAtPositionWorker(position, sourceFile, undefined, preferFollowing);
+export function getTokenAtPosition(
+    position: number,
+    sourceFile: gt.SourceFile,
+    preferFollowing?: boolean,
+): gt.Node {
+    return getTokenAtPositionWorker(
+        position,
+        sourceFile,
+        undefined,
+        preferFollowing,
+    );
 }
 
 /** Get the token whose text contains the position */
-function getTokenAtPositionWorker(position: number, sourceFile: gt.SourceFile, includePrecedingTokenAtEndPosition: (n: gt.Node) => boolean, preferFollowing: boolean): gt.Node | undefined {
+function getTokenAtPositionWorker(
+    position: number,
+    sourceFile: gt.SourceFile,
+    includePrecedingTokenAtEndPosition: (n: gt.Node) => boolean,
+    preferFollowing: boolean,
+): gt.Node | undefined {
     return find(sourceFile);
     // TODO: includePrecedingTokenAtEndPosition ?
     function find(n: gt.Node): gt.Node {
@@ -107,10 +134,12 @@ function getTokenAtPositionWorker(position: number, sourceFile: gt.SourceFile, i
             const child = children[i];
 
             if (child.pos > position) {
-                const candidate = findRightmostChildNodeWithTokens(children, preferFollowing ? i : i - 1);
+                const candidate = findRightmostChildNodeWithTokens(
+                    children,
+                    preferFollowing ? i : i - 1,
+                );
                 return candidate && findRightmostToken(candidate);
-            }
-            else if (position < child.end) {
+            } else if (position < child.end) {
                 if (isToken(child)) {
                     return child;
                 }
@@ -124,7 +153,10 @@ function getTokenAtPositionWorker(position: number, sourceFile: gt.SourceFile, i
         // throw new Error(`failed to find token at position ${position} in ${sourceFile.fileName}`);
     }
 
-    function findRightmostChildNodeWithTokens(children: gt.Node[], exclusiveStartPosition: number): gt.Node {
+    function findRightmostChildNodeWithTokens(
+        children: gt.Node[],
+        exclusiveStartPosition: number,
+    ): gt.Node {
         for (let i = exclusiveStartPosition; i >= 0; i--) {
             if (nodeHasTokens(children[i]) && position < children[i].end) {
                 return children[i];
@@ -138,17 +170,25 @@ function getTokenAtPositionWorker(position: number, sourceFile: gt.SourceFile, i
         }
 
         const children = getNodeChildren(n);
-        const candidate = findRightmostChildNodeWithTokens(children, children.length - 1);
+        const candidate = findRightmostChildNodeWithTokens(
+            children,
+            children.length - 1,
+        );
         return candidate && findRightmostToken(candidate);
     }
 }
 
-export function getAdjacentIdentfier(position: number, sourceFile: gt.SourceFile): gt.Identifier {
+export function getAdjacentIdentfier(
+    position: number,
+    sourceFile: gt.SourceFile,
+): gt.Identifier {
     let token = getTokenAtPosition(position, sourceFile);
-    if (token && token.kind === gt.SyntaxKind.Identifier) return <gt.Identifier>token;
+    if (token && token.kind === gt.SyntaxKind.Identifier)
+        return <gt.Identifier>token;
 
     token = findPrecedingToken(position, sourceFile);
-    if (token && token.kind === gt.SyntaxKind.Identifier) return <gt.Identifier>token;
+    if (token && token.kind === gt.SyntaxKind.Identifier)
+        return <gt.Identifier>token;
 
     return null;
 }
@@ -163,12 +203,19 @@ export function getAdjacentToken(position: number, sourceFile: gt.SourceFile) {
     return null;
 }
 
-export function getPositionOfLineAndCharacter(sourceFile: gt.SourceFile, line: number, character: number): number {
+export function getPositionOfLineAndCharacter(
+    sourceFile: gt.SourceFile,
+    line: number,
+    character: number,
+): number {
     return sourceFile.lineMap[line] + character;
 }
 
-export function getLineAndCharacterOfPosition(sourceFile: gt.SourceFile, pos: number): lsp.Position {
-    let loc = {line: 0, character: 0};
+export function getLineAndCharacterOfPosition(
+    sourceFile: gt.SourceFile,
+    pos: number,
+): lsp.Position {
+    let loc = { line: 0, character: 0 };
     for (let i = 0; i < sourceFile.lineMap.length; i++) {
         if (sourceFile.lineMap[i] <= pos) {
             loc = {
@@ -191,7 +238,7 @@ export function getNodeRange(node: gt.Node): lsp.Range {
 }
 
 // github.com/bevacqua/fuzzysearch
-export function fuzzysearch (needle: string, haystack: string) {
+export function fuzzysearch(needle: string, haystack: string) {
     let hlen = haystack.length;
     let nlen = needle.length;
     if (nlen > hlen) {
@@ -213,11 +260,9 @@ export function fuzzysearch (needle: string, haystack: string) {
             // try case insensitive
             if (nch >= 65 && nch <= 90) {
                 nch += 32;
-            }
-            else if (nch >= 97 && nch <= 122) {
+            } else if (nch >= 97 && nch <= 122) {
                 nch -= 32;
-            }
-            else {
+            } else {
                 break;
             }
             if (hch === nch) {
@@ -230,10 +275,9 @@ export function fuzzysearch (needle: string, haystack: string) {
 }
 
 export function osNormalizePath(p: string) {
-    if (path.sep === '/') {
-        return p.replace(/\\/g, '/');
-    }
-    else {
-        return p.replace(/\//g, '\\');
+    if (path.sep === "/") {
+        return p.replace(/\\/g, "/");
+    } else {
+        return p.replace(/\//g, "\\");
     }
 }

@@ -1,52 +1,64 @@
-import * as gt from '../compiler/types';
-import { SyntaxKind, SourceFile, Node, Symbol, SymbolTable } from '../compiler/types';
-import { getSourceFileOfNode } from '../compiler/utils';
-import { Parser } from '../compiler/parser';
-import { S2WorkspaceMetadata } from './s2meta';
-import { bindSourceFile, unbindSourceFile } from '../compiler/binder';
-import { findSC2ArchiveDirectories, isSC2Archive, SC2Archive, SC2Workspace, openArchiveWorkspace, S2QualifiedFile } from '../sc2mod/archive';
-import * as lsp from 'vscode-languageserver';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import * as path from 'path';
-import * as fs from 'fs-extra';
-import * as glob from 'fast-glob';
-import URI from 'vscode-uri';
-import { TypeChecker } from '../compiler/checker';
-import { DataCatalogConfig, MetadataConfig } from './server';
+import * as gt from "../compiler/types";
+import { SourceFile } from "../compiler/types";
+import { Parser } from "../compiler/parser";
+import { S2WorkspaceMetadata } from "./s2meta";
+import { bindSourceFile, unbindSourceFile } from "../compiler/binder";
+import {
+    SC2Archive,
+    SC2Workspace,
+    openArchiveWorkspace,
+    S2QualifiedFile,
+} from "../sc2mod/archive";
+import * as lsp from "vscode-languageserver";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import * as path from "path";
+import * as fs from "fs-extra";
+import * as glob from "fast-glob";
+import URI from "vscode-uri";
+import { TypeChecker } from "../compiler/checker";
+import { DataCatalogConfig, MetadataConfig } from "./server";
 
 export function createTextDocument(uri: string, text: string) {
-    return TextDocument.create(uri, 'galaxy', 0, text);
+    return TextDocument.create(uri, "galaxy", 0, text);
 }
 
 export function createTextDocumentFromFs(filepath: string) {
     filepath = path.resolve(filepath);
-    return createTextDocument(URI.file(filepath).toString(), fs.readFileSync(filepath, 'utf8'));
+    return createTextDocument(
+        URI.file(filepath).toString(),
+        fs.readFileSync(filepath, "utf8"),
+    );
 }
 
 export async function readDocumentFile(fsPath: string) {
     return createTextDocument(
         URI.file(fsPath).toString(),
-        await fs.readFile(fsPath, 'utf8')
+        await fs.readFile(fsPath, "utf8"),
     );
 }
 
 export function createTextDocumentFromUri(uri: string) {
-    return createTextDocument(uri, fs.readFileSync(URI.parse(uri).fsPath, 'utf8'));
+    return createTextDocument(
+        uri,
+        fs.readFileSync(URI.parse(uri).fsPath, "utf8"),
+    );
 }
 
-export async function *openSourceFilesInLocation(...srcFolders: string[]) {
-    const workspaceFolders = await Promise.all(srcFolders.map(async folder => {
-        return {
-            folder,
-            galaxyFiles: await glob('**/*.galaxy', {
-                cwd: folder,
-                absolute: true,
-                caseSensitiveMatch: false,
-                onlyFiles: true,
-                objectMode: false,
-            })
-        };
-    }));
+export async function* openSourceFilesInLocation(...srcFolders: string[]) {
+    const workspaceFolders = await Promise.all(
+        srcFolders.map(async (folder) => {
+            return {
+                folder,
+                galaxyFiles: await glob("**/*.galaxy", {
+                    cwd: folder,
+                    absolute: true,
+                    caseSensitiveMatch: false,
+                    onlyFiles: true,
+                    objectMode: false,
+                }),
+            };
+        }),
+    );
 
     for (const wsFolder of workspaceFolders) {
         for (const wsFile of wsFolder.galaxyFiles) {
@@ -67,13 +79,17 @@ export interface S2WorkspaceChangeEvent {
 
 export class WorkspaceWatcher {
     public readonly folders: string[];
-    protected _onDidOpen = new lsp.Emitter<lsp.TextDocumentChangeEvent<TextDocument>>();
+    protected _onDidOpen = new lsp.Emitter<
+        lsp.TextDocumentChangeEvent<TextDocument>
+    >();
 
     constructor(...folders: string[]) {
         this.folders = folders;
     }
 
-    public get onDidOpen(): lsp.Event<lsp.TextDocumentChangeEvent<TextDocument>> {
+    public get onDidOpen(): lsp.Event<
+        lsp.TextDocumentChangeEvent<TextDocument>
+    > {
         return this._onDidOpen.event;
     }
 }
@@ -93,16 +109,30 @@ export class S2WorkspaceWatcher extends WorkspaceWatcher {
     }
 
     public async watch() {
-        const rootArchive = new SC2Archive(path.basename(this.folders[0]), this.folders[0]);
-        const workspace = await openArchiveWorkspace(rootArchive, this.modSources);
+        const rootArchive = new SC2Archive(
+            path.basename(this.folders[0]),
+            this.folders[0],
+        );
+        const workspace = await openArchiveWorkspace(
+            rootArchive,
+            this.modSources,
+        );
 
         for (const modArchive of workspace.dependencies) {
-            for (const extSrc of await modArchive.findFiles('**/*.galaxy')) {
-                this._onDidOpen.fire({document: createTextDocumentFromFs(path.join(modArchive.directory, extSrc))});
+            for (const extSrc of await modArchive.findFiles("**/*.galaxy")) {
+                this._onDidOpen.fire({
+                    document: createTextDocumentFromFs(
+                        path.join(modArchive.directory, extSrc),
+                    ),
+                });
             }
         }
-        for (const extSrc of await rootArchive.findFiles('**/*.galaxy')) {
-            this._onDidOpen.fire({document: createTextDocumentFromFs(path.join(rootArchive.directory, extSrc))});
+        for (const extSrc of await rootArchive.findFiles("**/*.galaxy")) {
+            this._onDidOpen.fire({
+                document: createTextDocumentFromFs(
+                    path.join(rootArchive.directory, extSrc),
+                ),
+            });
         }
 
         this._onDidOpenS2Workspace.fire({
@@ -129,7 +159,10 @@ export class Store implements IStoreSymbols {
     protected parser: Parser;
     public rootPath?: string;
     public documents = new Map<string, QualifiedSourceFile>();
-    public readonly qualifiedDocuments = new Map<string, Map<string, QualifiedSourceFile>>();
+    public readonly qualifiedDocuments = new Map<
+        string,
+        Map<string, QualifiedSourceFile>
+    >();
     public openDocuments = new Set<string>();
     public s2workspace: SC2Workspace;
     public s2metadata: S2WorkspaceMetadata;
@@ -148,11 +181,15 @@ export class Store implements IStoreSymbols {
     }
 
     protected removeQualifiedDocument(qsFile: QualifiedSourceFile) {
-        const qDocMap = this.qualifiedDocuments.get(qsFile.s2meta.docName.toLowerCase());
+        const qDocMap = this.qualifiedDocuments.get(
+            qsFile.s2meta.docName.toLowerCase(),
+        );
         if (qDocMap) {
             qDocMap.delete(qsFile.fileName);
             if (!qDocMap.size) {
-                this.qualifiedDocuments.delete(qsFile.s2meta.docName.toLowerCase());
+                this.qualifiedDocuments.delete(
+                    qsFile.s2meta.docName.toLowerCase(),
+                );
             }
         }
     }
@@ -166,11 +203,14 @@ export class Store implements IStoreSymbols {
         let s2file: S2QualifiedFile;
         if (this.s2workspace) {
             s2file = this.s2workspace.resolvePath(fsPath);
-        }
-        else if (this.rootPath) {
-            const commonBase = fsPath.toLowerCase().startsWith(this.rootPath.toLowerCase() + path.sep);
+        } else if (this.rootPath) {
+            const commonBase = fsPath
+                .toLowerCase()
+                .startsWith(this.rootPath.toLowerCase() + path.sep);
             if (commonBase) {
-                const relativePath = fsPath.substring(this.rootPath.length + 1).toLowerCase();
+                const relativePath = fsPath
+                    .substring(this.rootPath.length + 1)
+                    .toLowerCase();
                 s2file = {
                     fsPath: fsPath,
                     relativePath: relativePath,
@@ -183,17 +223,25 @@ export class Store implements IStoreSymbols {
         if (s2file) {
             qsFile.s2meta = {
                 file: s2file,
-                docName: s2file.relativePath.replace(/\.galaxy$/, ''),
+                docName: s2file.relativePath.replace(/\.galaxy$/, ""),
             };
 
-            let qDocMap = this.qualifiedDocuments.get(qsFile.s2meta.docName.toLowerCase());
+            let qDocMap = this.qualifiedDocuments.get(
+                qsFile.s2meta.docName.toLowerCase(),
+            );
             if (!qDocMap) {
                 qDocMap = new Map();
-                this.qualifiedDocuments.set(qsFile.s2meta.docName.toLowerCase(), qDocMap);
+                this.qualifiedDocuments.set(
+                    qsFile.s2meta.docName.toLowerCase(),
+                    qDocMap,
+                );
             }
 
             if (qDocMap.size > 1) {
-                const tmpDocs = Array.from(qDocMap).sort((a, b) => a[1].s2meta.file.priority - b[1].s2meta.file.priority);
+                const tmpDocs = Array.from(qDocMap).sort(
+                    (a, b) =>
+                        a[1].s2meta.file.priority - b[1].s2meta.file.priority,
+                );
                 qDocMap.clear();
                 for (const [k, v] of tmpDocs) {
                     qDocMap.set(k, v);
@@ -201,8 +249,7 @@ export class Store implements IStoreSymbols {
             }
 
             qDocMap.set(qsFile.fileName, qsFile);
-        }
-        else {
+        } else {
             qsFile.s2meta = void 0;
         }
     }
@@ -220,22 +267,30 @@ export class Store implements IStoreSymbols {
     public updateDocument(document: TextDocument, check = false) {
         if (this.documents.has(document.uri)) {
             const currSorceFile = this.documents.get(document.uri);
-            if (document.getText().length === currSorceFile.text.length && document.getText().valueOf() === currSorceFile.text.valueOf()) {
+            if (
+                document.getText().length === currSorceFile.text.length &&
+                document.getText().valueOf() === currSorceFile.text.valueOf()
+            ) {
                 return;
             }
 
             this.removeDocument(document.uri);
         }
 
-        const sourceFile = this.parser.parseFile(document.uri, document.getText());
+        const sourceFile = this.parser.parseFile(
+            document.uri,
+            document.getText(),
+        );
         this.documents.set(document.uri, sourceFile);
         this.requalifyFile(sourceFile);
 
         if (check) {
             const checker = new TypeChecker(this);
-            sourceFile.additionalSyntacticDiagnostics = checker.checkSourceFile(sourceFile, true);
-        }
-        else {
+            sourceFile.additionalSyntacticDiagnostics = checker.checkSourceFile(
+                sourceFile,
+                true,
+            );
+        } else {
             bindSourceFile(sourceFile, this);
         }
     }
@@ -251,14 +306,18 @@ export class Store implements IStoreSymbols {
 
     public async rebuildS2Metadata(
         metadataCfg: MetadataConfig = {
-            loadLevel: 'Default',
-            localization: 'enUS',
+            loadLevel: "Default",
+            localization: "enUS",
         },
         dataCatalogConfig: DataCatalogConfig = {
             enabled: true,
-        }
+        },
     ) {
-        this.s2metadata = new S2WorkspaceMetadata(this.s2workspace, metadataCfg, dataCatalogConfig);
+        this.s2metadata = new S2WorkspaceMetadata(
+            this.s2workspace,
+            metadataCfg,
+            dataCatalogConfig,
+        );
         await this.s2metadata.build();
     }
 

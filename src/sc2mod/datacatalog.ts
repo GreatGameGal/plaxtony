@@ -1,8 +1,8 @@
-import * as lsp from 'vscode-languageserver';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { logger, logIt } from '../common';
-import { SC2Archive, SC2Workspace } from './archive';
-import * as dtypes from './dtypes';
+import * as lsp from "vscode-languageserver";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import { logIt } from "../common";
+import { SC2Archive, SC2Workspace } from "./archive";
+import * as dtypes from "./dtypes";
 
 export type CatalogEntryFamily = dtypes.S2DataCatalogDomain;
 export type CatalogFileKind = string;
@@ -21,7 +21,7 @@ export interface CatalogDeclaration extends CatalogEntity {
 
 export interface CatalogDocument {
     uri: lsp.DocumentUri;
-    declarations: {[type: number]: Map<string, CatalogDeclaration>};
+    declarations: { [type: number]: Map<string, CatalogDeclaration> };
 }
 
 export class CatalogStore {
@@ -42,7 +42,7 @@ export class CatalogStore {
         };
         parseCatalog(doc, (decl) => {
             let declarations = catDoc.declarations[decl.family];
-            if (typeof declarations === 'undefined') {
+            if (typeof declarations === "undefined") {
                 catDoc.declarations[decl.family] = declarations = new Map();
             }
             declarations.set(decl.id, decl);
@@ -53,7 +53,7 @@ export class CatalogStore {
     public *findEntry(family: CatalogEntryFamily) {
         for (const catDoc of this.documentMap.values()) {
             const declarations = catDoc.declarations[family];
-            if (typeof declarations === 'undefined') continue;
+            if (typeof declarations === "undefined") continue;
             yield declarations.values();
         }
     }
@@ -61,7 +61,7 @@ export class CatalogStore {
     public *findEntryByName(family: CatalogEntryFamily, id: string) {
         for (const catDoc of this.documentMap.values()) {
             const declarations = catDoc.declarations[family];
-            if (typeof declarations === 'undefined') continue;
+            if (typeof declarations === "undefined") continue;
 
             const decl = declarations.get(id);
             if (decl) {
@@ -80,17 +80,23 @@ const reAttrs = /([\w-]+)\s?=\s?"([^"]+)"/g;
 const reSubwordSeparator = /(?=[A-Z])/;
 type ParseCatalogOnDeclaration = (declaration: CatalogDeclaration) => void;
 
-function parseCatalog(tdoc: TextDocument, onDeclaration: ParseCatalogOnDeclaration) {
+function parseCatalog(
+    tdoc: TextDocument,
+    onDeclaration: ParseCatalogOnDeclaration,
+) {
     for (let i = 0; i < tdoc.lineCount; i++) {
-        const content = tdoc.getText({ start: { line: i, character: 0 }, end: { line: i, character: 1024 } });
+        const content = tdoc.getText({
+            start: { line: i, character: 0 },
+            end: { line: i, character: 1024 },
+        });
         const matchedElement = content.match(reDataElement);
         if (!matchedElement) continue;
 
         let family: dtypes.S2DataCatalogDomain | undefined;
         const kindList = matchedElement[1].split(reSubwordSeparator);
         while (1) {
-            family = (dtypes as any).S2DataCatalogDomain[kindList.join('')];
-            if (typeof family === 'number') break;
+            family = (dtypes as any).S2DataCatalogDomain[kindList.join("")];
+            if (typeof family === "number") break;
             if (kindList.length <= 1) break;
             kindList.pop();
         }
@@ -99,27 +105,28 @@ function parseCatalog(tdoc: TextDocument, onDeclaration: ParseCatalogOnDeclarati
 
         const declaration: CatalogDeclaration = {
             family: family,
-            id: '',
+            id: "",
             ctype: matchedElement[1],
             uri: tdoc.uri,
             position: {
                 line: i,
-                character: matchedElement[0].length - matchedElement[1].length - matchedElement[2].length
+                character:
+                    matchedElement[0].length -
+                    matchedElement[1].length -
+                    matchedElement[2].length,
             },
         };
 
         let matchedAttr: RegExpExecArray;
-        while (matchedAttr = reAttrs.exec(matchedElement[2])) {
+        while ((matchedAttr = reAttrs.exec(matchedElement[2]))) {
             switch (matchedAttr[1]) {
-                case 'id':
-                {
+                case "id": {
                     declaration.id = matchedAttr[2];
                     break;
                 }
 
-                case 'parent':
-                case 'default':
-                {
+                case "parent":
+                case "default": {
                     // (<any>entry)[matchedAttr[1]] = matchedAttr[2];
                     break;
                 }

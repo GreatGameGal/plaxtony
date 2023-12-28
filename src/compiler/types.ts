@@ -1,19 +1,19 @@
-import * as lsp from 'vscode-languageserver';
+import * as lsp from "vscode-languageserver";
 
 /* @internal */
 export const enum CharacterCodes {
     nullCharacter = 0,
-    maxAsciiCharacter = 0x7F,
+    maxAsciiCharacter = 0x7f,
 
-    lineFeed = 0x0A,              // \n
-    carriageReturn = 0x0D,        // \r
+    lineFeed = 0x0a, // \n
+    carriageReturn = 0x0d, // \r
     lineSeparator = 0x2028,
     paragraphSeparator = 0x2029,
     nextLine = 0x0085,
 
     // Unicode 3.0 space characters
-    space = 0x0020,   // " "
-    nonBreakingSpace = 0x00A0,   //
+    space = 0x0020, // " "
+    nonBreakingSpace = 0x00a0, //
     enQuad = 0x2000,
     emQuad = 0x2001,
     enSpace = 0x2002,
@@ -24,14 +24,14 @@ export const enum CharacterCodes {
     figureSpace = 0x2007,
     punctuationSpace = 0x2008,
     thinSpace = 0x2009,
-    hairSpace = 0x200A,
-    zeroWidthSpace = 0x200B,
-    narrowNoBreakSpace = 0x202F,
+    hairSpace = 0x200a,
+    zeroWidthSpace = 0x200b,
+    narrowNoBreakSpace = 0x202f,
     ideographicSpace = 0x3000,
-    mathematicalSpace = 0x205F,
+    mathematicalSpace = 0x205f,
     ogham = 0x1680,
 
-    _ = 0x5F,
+    _ = 0x5f,
     $ = 0x24,
 
     _0 = 0x30,
@@ -54,12 +54,12 @@ export const enum CharacterCodes {
     g = 0x67,
     h = 0x68,
     i = 0x69,
-    j = 0x6A,
-    k = 0x6B,
-    l = 0x6C,
-    m = 0x6D,
-    n = 0x6E,
-    o = 0x6F,
+    j = 0x6a,
+    k = 0x6b,
+    l = 0x6c,
+    m = 0x6d,
+    n = 0x6e,
+    o = 0x6f,
     p = 0x70,
     q = 0x71,
     r = 0x72,
@@ -70,7 +70,7 @@ export const enum CharacterCodes {
     w = 0x77,
     x = 0x78,
     y = 0x79,
-    z = 0x7A,
+    z = 0x7a,
 
     A = 0x41,
     B = 0x42,
@@ -81,12 +81,12 @@ export const enum CharacterCodes {
     G = 0x47,
     H = 0x48,
     I = 0x49,
-    J = 0x4A,
-    K = 0x4B,
-    L = 0x4C,
-    M = 0x4D,
-    N = 0x4E,
-    O = 0x4F,
+    J = 0x4a,
+    K = 0x4b,
+    L = 0x4c,
+    M = 0x4d,
+    N = 0x4e,
+    O = 0x4f,
     P = 0x50,
     Q = 0x51,
     R = 0x52,
@@ -99,42 +99,42 @@ export const enum CharacterCodes {
     Y = 0x59,
     Z = 0x5a,
 
-    ampersand = 0x26,             // &
-    asterisk = 0x2A,              // *
-    at = 0x40,                    // @
-    backslash = 0x5C,             // \
-    backtick = 0x60,              // `
-    bar = 0x7C,                   // |
-    caret = 0x5E,                 // ^
-    closeBrace = 0x7D,            // }
-    closeBracket = 0x5D,          // ]
-    closeParen = 0x29,            // )
-    colon = 0x3A,                 // :
-    comma = 0x2C,                 // ,
-    dot = 0x2E,                   // .
-    doubleQuote = 0x22,           // "
-    equals = 0x3D,                // =
-    exclamation = 0x21,           // !
-    greaterThan = 0x3E,           // >
-    hash = 0x23,                  // #
-    lessThan = 0x3C,              // <
-    minus = 0x2D,                 // -
-    openBrace = 0x7B,             // {
-    openBracket = 0x5B,           // [
-    openParen = 0x28,             // (
-    percent = 0x25,               // %
-    plus = 0x2B,                  // +
-    question = 0x3F,              // ?
-    semicolon = 0x3B,             // ;
-    singleQuote = 0x27,           // '
-    slash = 0x2F,                 // /
-    tilde = 0x7E,                 // ~
+    ampersand = 0x26, // &
+    asterisk = 0x2a, // *
+    at = 0x40, // @
+    backslash = 0x5c, // \
+    backtick = 0x60, // `
+    bar = 0x7c, // |
+    caret = 0x5e, // ^
+    closeBrace = 0x7d, // }
+    closeBracket = 0x5d, // ]
+    closeParen = 0x29, // )
+    colon = 0x3a, // :
+    comma = 0x2c, // ,
+    dot = 0x2e, // .
+    doubleQuote = 0x22, // "
+    equals = 0x3d, // =
+    exclamation = 0x21, // !
+    greaterThan = 0x3e, // >
+    hash = 0x23, // #
+    lessThan = 0x3c, // <
+    minus = 0x2d, // -
+    openBrace = 0x7b, // {
+    openBracket = 0x5b, // [
+    openParen = 0x28, // (
+    percent = 0x25, // %
+    plus = 0x2b, // +
+    question = 0x3f, // ?
+    semicolon = 0x3b, // ;
+    singleQuote = 0x27, // '
+    slash = 0x2f, // /
+    tilde = 0x7e, // ~
 
-    backspace = 0x08,             // \b
-    formFeed = 0x0C,              // \f
-    byteOrderMark = 0xFEFF,
-    tab = 0x09,                   // \t
-    verticalTab = 0x0B,           // \v
+    backspace = 0x08, // \b
+    formFeed = 0x0c, // \f
+    byteOrderMark = 0xfeff,
+    tab = 0x09, // \t
+    verticalTab = 0x0b, // \v
 }
 
 export const enum SyntaxKind {
@@ -330,25 +330,24 @@ export const enum SyntaxKindMarker {
 
     FirstKeywordType = SyntaxKind.BoolKeyword,
     LastKeywordType = SyntaxKind.ArrayType,
-};
+}
 
-export type Modifier
-    = Token<SyntaxKind.ConstKeyword>
+export type Modifier =
+    | Token<SyntaxKind.ConstKeyword>
     | Token<SyntaxKind.NativeKeyword>
-    | Token<SyntaxKind.StaticKeyword>
-;
+    | Token<SyntaxKind.StaticKeyword>;
 
 export const enum SymbolFlags {
-    None                    = 0,
-    LocalVariable           = 1 << 1,
-    FunctionParameter       = 1 << 2,
-    GlobalVariable          = 1 << 3,
-    Property                = 1 << 4,
-    Function                = 1 << 5,
-    Struct                  = 1 << 6,
-    Typedef                 = 1 << 7,
-    Static                  = 1 << 10,
-    Native                  = 1 << 11,
+    None = 0,
+    LocalVariable = 1 << 1,
+    FunctionParameter = 1 << 2,
+    GlobalVariable = 1 << 3,
+    Property = 1 << 4,
+    Function = 1 << 5,
+    Struct = 1 << 6,
+    Typedef = 1 << 7,
+    Static = 1 << 10,
+    Native = 1 << 11,
 
     Variable = LocalVariable | FunctionParameter | GlobalVariable,
     FunctionScopedVariable = LocalVariable | FunctionParameter,
@@ -356,45 +355,45 @@ export const enum SymbolFlags {
 
 export interface Symbol {
     id?: number;
-    flags: SymbolFlags;                     // Symbol flags
-    escapedName: string;                    // Name of symbol
-    declarations: Declaration[];            // Declarations associated with this symbol
-    valueDeclaration?: Declaration;         // First value declaration of the symbol
-    members?: SymbolTable;                  // members
-    target?: Symbol;                        // Resolved (non-alias) target of an alias
-    /* @internal */ parent?: Symbol;        // Parent symbol
+    flags: SymbolFlags; // Symbol flags
+    escapedName: string; // Name of symbol
+    declarations: Declaration[]; // Declarations associated with this symbol
+    valueDeclaration?: Declaration; // First value declaration of the symbol
+    members?: SymbolTable; // members
+    target?: Symbol; // Resolved (non-alias) target of an alias
+    /* @internal */ parent?: Symbol; // Parent symbol
     /* @internal */ isReferenced?: boolean; // True if the symbol is referenced elsewhere
-    /* @internal */ isAssigned?: boolean;   // True if the symbol is a parameter with assignments
+    /* @internal */ isAssigned?: boolean; // True if the symbol is a parameter with assignments
 }
 
 export type SymbolTable = Map<string, Symbol>;
 
 export const enum TypeFlags {
-    Unknown                 = 1 << 0,
-    String                  = 1 << 1,
-    Integer                 = 1 << 2,
-    Byte                    = 1 << 3,
-    Char                    = 1 << 4,
-    Fixed                   = 1 << 5,
-    Boolean                 = 1 << 6,
-    Nullable                = 1 << 7,
-    StringLiteral           = 1 << 8,
-    NumericLiteral          = 1 << 9,
-    BooleanLiteral          = 1 << 10,
-    Void                    = 1 << 11,
-    Null                    = 1 << 12,
-    Struct                  = 1 << 13,
-    Function                = 1 << 14,
-    Complex                 = 1 << 15,
-    Array                   = 1 << 16,
-    Mapped                  = 1 << 17,
+    Unknown = 1 << 0,
+    String = 1 << 1,
+    Integer = 1 << 2,
+    Byte = 1 << 3,
+    Char = 1 << 4,
+    Fixed = 1 << 5,
+    Boolean = 1 << 6,
+    Nullable = 1 << 7,
+    StringLiteral = 1 << 8,
+    NumericLiteral = 1 << 9,
+    BooleanLiteral = 1 << 10,
+    Void = 1 << 11,
+    Null = 1 << 12,
+    Struct = 1 << 13,
+    Function = 1 << 14,
+    Complex = 1 << 15,
+    Array = 1 << 16,
+    Mapped = 1 << 17,
 
-    Reference               = 1 << 18,
+    Reference = 1 << 18,
 
-    Typedef                 = 1 << 21,
+    Typedef = 1 << 21,
 
-    True                    = 1 << 22,
-    False                   = 1 << 23,
+    True = 1 << 22,
+    False = 1 << 23,
 
     /* @internal */
     Literal = StringLiteral | NumericLiteral | BooleanLiteral,
@@ -403,16 +402,16 @@ export const enum TypeFlags {
 }
 
 export interface Type {
-    flags: TypeFlags;                // Flags
-    symbol?: Symbol;                 // Symbol associated with type (if any)
+    flags: TypeFlags; // Flags
+    symbol?: Symbol; // Symbol associated with type (if any)
 }
 
 // String literal types (TypeFlags.StringLiteral)
 // Numeric literal types (TypeFlags.NumberLiteral)
 export interface LiteralType extends Type {
-    value: string | number;     // Value of literal
-    freshType?: LiteralType;    // Fresh version of type
-    regularType?: LiteralType;  // Regular version of type
+    value: string | number; // Value of literal
+    freshType?: LiteralType; // Fresh version of type
+    regularType?: LiteralType; // Regular version of type
 }
 
 export interface StringLiteralType extends LiteralType {
@@ -423,11 +422,9 @@ export interface NumberLiteralType extends LiteralType {
     value: number;
 }
 
-export interface StructType extends Type {
-}
+export interface StructType extends Type {}
 
-export interface FunctionType extends Type {
-}
+export interface FunctionType extends Type {}
 
 export interface TypedefType extends Type {
     // aliasOf: Type;
@@ -448,15 +445,15 @@ export interface ComplexType extends Type {
 }
 
 export const enum NodeCheckFlags {
-    TypeChecked                         = 1 << 0,  // Node has been type checked
-    ContextChecked                      = 1 << 1,  // Contextual types have been assigned
+    TypeChecked = 1 << 0, // Node has been type checked
+    ContextChecked = 1 << 1, // Contextual types have been assigned
 }
 
 /* @internal */
 export interface NodeLinks {
-    flags?: NodeCheckFlags;           // Set of flags specific to Node
-    resolvedType?: Type;              // Cached type of type node
-    resolvedSymbol?: Symbol;          // Cached name resolution result
+    flags?: NodeCheckFlags; // Set of flags specific to Node
+    resolvedType?: Type; // Cached type of type node
+    resolvedSymbol?: Symbol; // Cached name resolution result
 }
 
 export interface TextRange {
@@ -479,8 +476,9 @@ export interface Node extends TextRange {
     syntaxTokens: Node[];
 }
 
-export interface NodeArray<T extends Node> extends ReadonlyArray<T>, TextRange {
-}
+export interface NodeArray<T extends Node>
+    extends ReadonlyArray<T>,
+        TextRange {}
 
 export type MutableNodeArray<T extends Node> = NodeArray<T> & T[];
 
@@ -560,7 +558,9 @@ export interface PropertyDeclaration extends NamedDeclaration {
     type: TypeNode;
 }
 
-export interface FunctionDeclaration extends SignatureDeclaration, NamedDeclaration {
+export interface FunctionDeclaration
+    extends SignatureDeclaration,
+        NamedDeclaration {
     kind: SyntaxKind.FunctionDeclaration;
     body?: Block;
 }
@@ -587,8 +587,7 @@ export interface SourceFile extends Declaration {
     /* @internal */ additionalSyntacticDiagnostics: Diagnostic[]; // Stores additional file-level diagnostics reported by the program
 }
 
-export interface Expression extends Node {
-}
+export interface Expression extends Node {}
 
 export interface ParenthesizedExpression extends PrimaryExpression {
     kind: SyntaxKind.ParenthesizedExpression;
@@ -614,57 +613,50 @@ export interface Identifier extends PrimaryExpression {
     resolvedSymbol?: Symbol;
 }
 
-export type EntityNameExpression = Identifier | PropertyAccessExpression | ParenthesizedExpression;
+export type EntityNameExpression =
+    | Identifier
+    | PropertyAccessExpression
+    | ParenthesizedExpression;
 
-export type PrefixUnaryOperator
-    = SyntaxKind.MinusToken
+export type PrefixUnaryOperator =
+    | SyntaxKind.MinusToken
     | SyntaxKind.PlusToken
     | SyntaxKind.TildeToken
     | SyntaxKind.ExclamationToken
     | SyntaxKind.MinusMinusToken
+    | SyntaxKind.PlusPlusToken;
+
+export type PostfixUnaryOperator =
     | SyntaxKind.PlusPlusToken
-;
+    | SyntaxKind.MinusMinusToken;
 
-export type PostfixUnaryOperator
-    = SyntaxKind.PlusPlusToken
-    | SyntaxKind.MinusMinusToken
-;
-
-export type BinaryOperator
-    = SyntaxKind.MinusToken
+export type BinaryOperator =
+    | SyntaxKind.MinusToken
     | SyntaxKind.PlusToken
     | SyntaxKind.AsteriskToken
     | SyntaxKind.SlashToken
     | SyntaxKind.PercentToken
-
     | SyntaxKind.AmpersandToken
     | SyntaxKind.BarToken
     | SyntaxKind.CaretToken
     | SyntaxKind.LessThanLessThanToken
     | SyntaxKind.GreaterThanGreaterThanToken
-
     | SyntaxKind.BarBarToken
-    | SyntaxKind.AmpersandAmpersandToken
-;
+    | SyntaxKind.AmpersandAmpersandToken;
 
 export type BinaryOperatorToken = Token<BinaryOperator>;
 
-export interface UpdateExpression extends UnaryExpression {
-}
+export interface UpdateExpression extends UnaryExpression {}
 
-export interface LeftHandSideExpression extends UpdateExpression {
-}
+export interface LeftHandSideExpression extends UpdateExpression {}
 
-export interface MemberExpression extends LeftHandSideExpression {
-}
+export interface MemberExpression extends LeftHandSideExpression {}
 
-export interface PrimaryExpression extends MemberExpression {
-}
+export interface PrimaryExpression extends MemberExpression {}
 
-export interface UnaryExpression extends Expression {
-}
+export interface UnaryExpression extends Expression {}
 
-export interface BinaryExpression extends Expression  {
+export interface BinaryExpression extends Expression {
     kind: SyntaxKind.BinaryExpression;
     left: Expression;
     operatorToken: Token<BinaryOperator>;
@@ -693,7 +685,9 @@ export interface SymbolLink {
     symbolLink: Symbol;
 }
 
-export interface PropertyAccessExpression extends MemberExpression, NamedDeclaration {
+export interface PropertyAccessExpression
+    extends MemberExpression,
+        NamedDeclaration {
     kind: SyntaxKind.PropertyAccessExpression;
     expression: LeftHandSideExpression;
     name: Identifier;

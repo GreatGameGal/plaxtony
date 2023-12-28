@@ -1,5 +1,4 @@
-import * as fs from 'fs';
-import * as xml from 'xml2js';
+import * as xml from "xml2js";
 
 export const enum ElementFlag {
     Native = 1 << 1,
@@ -32,13 +31,13 @@ export class ElementReference<T extends Element> {
     }
 
     public link() {
-        return this.type.name + '/' + this.id;
+        return this.type.name + "/" + this.id;
     }
 
     public globalLink() {
         let link = this.link();
         if (this.library) {
-            link = this.library + '/' + link;
+            link = this.library + "/" + link;
         }
         return link;
     }
@@ -60,66 +59,66 @@ export class ParameterType {
 
     get galaxyType(): string {
         switch (this.type) {
-            case 'anygamelink':
-            case 'gamelink':
-            case 'filepath':
-            case 'actormsg':
-            case 'aidef':
-            case 'modelanim':
-            case 'attributegame':
-            case 'attributeplayer':
-            case 'attributevalue':
-            case 'catalogentry':
-            case 'catalogfieldname':
-            case 'catalogfieldpath':
-            case 'reference':
-            case 'catalogscope':
-            case 'charge':
-            case 'convcharacter':
-            case 'convline':
-            case 'convstateindex':
-            case 'conversationtag':
-            case 'cooldown':
-            case 'fontstyle':
-            case 'gameoption':
-            case 'gameoptionvalue':
-            case 'modelcamera':
-            case 'timeofday':
-            case 'layoutframe':
-            case 'layoutframerel':
-            case 'userfield':
-            case 'userinstance':
-            case 'water': {
-                return 'string';
+            case "anygamelink":
+            case "gamelink":
+            case "filepath":
+            case "actormsg":
+            case "aidef":
+            case "modelanim":
+            case "attributegame":
+            case "attributeplayer":
+            case "attributevalue":
+            case "catalogentry":
+            case "catalogfieldname":
+            case "catalogfieldpath":
+            case "reference":
+            case "catalogscope":
+            case "charge":
+            case "convcharacter":
+            case "convline":
+            case "convstateindex":
+            case "conversationtag":
+            case "cooldown":
+            case "fontstyle":
+            case "gameoption":
+            case "gameoptionvalue":
+            case "modelcamera":
+            case "timeofday":
+            case "layoutframe":
+            case "layoutframerel":
+            case "userfield":
+            case "userinstance":
+            case "water": {
+                return "string";
             }
 
-            case 'aidefwave':
-            case 'cinematic':
-            case 'conversation':
-            case 'reply':
-            case 'datatable':
-            case 'dialog':
-            case 'control':
-            case 'difficulty':
-            case 'objective':
-            case 'path':
-            case 'ping':
-            case 'planet':
-            case 'playercolor':
-            case 'portrait':
-            case 'transmission': {
-                return 'int';
+            case "aidefwave":
+            case "cinematic":
+            case "conversation":
+            case "reply":
+            case "datatable":
+            case "dialog":
+            case "control":
+            case "difficulty":
+            case "objective":
+            case "path":
+            case "ping":
+            case "planet":
+            case "playercolor":
+            case "portrait":
+            case "transmission": {
+                return "int";
             }
 
-            case 'animlengthquery': {
-                return 'generichandle';
+            case "animlengthquery": {
+                return "generichandle";
             }
 
-            case 'targetfilter': {
-                return 'unitfilter';
+            case "targetfilter": {
+                return "unitfilter";
             }
 
-            case 'preset':
+            case "preset":
                 return this.typeElement.resolve().baseType;
 
             default:
@@ -136,8 +135,8 @@ export abstract class Tag {
 
     public link() {
         return (
-            (this.libId ? this.libId + '/' : '') +
-            (this.constructor.name + '/') +
+            (this.libId ? this.libId + "/" : "") +
+            (this.constructor.name + "/") +
             this.id
         );
     }
@@ -145,14 +144,14 @@ export abstract class Tag {
     public toString() {
         const parts: string[] = [];
         if (this.libId) {
-            parts.push('lib' + this.libId);
+            parts.push("lib" + this.libId);
         }
         const prefix = (<any>this.constructor).prefix;
         if (prefix) {
             parts.push(prefix);
         }
         parts.push(this.name ? this.name : this.id);
-        return parts.join('_');
+        return parts.join("_");
     }
 
     public textKey(kind: string) {
@@ -160,12 +159,11 @@ export abstract class Tag {
         parts.push(this.constructor.name);
         parts.push(kind);
         if (this.libId) {
-            parts.push(['lib', this.libId, this.id].join('_'));
-        }
-        else {
+            parts.push(["lib", this.libId, this.id].join("_"));
+        } else {
             parts.push(this.id);
         }
-        return parts.join('/');
+        return parts.join("/");
     }
 }
 
@@ -191,8 +189,8 @@ export class ParamDef extends Element {
         const rtype = this.type.galaxyType;
         if (this.isReference) {
             switch (rtype) {
-                case 'unit': {
-                    return 'unitref';
+                case "unit": {
+                    return "unitref";
                     break;
                 }
             }
@@ -202,7 +200,7 @@ export class ParamDef extends Element {
 }
 
 export class FunctionDef extends Element {
-    static prefix = 'gf';
+    static prefix = "gf";
     parameters: ElementReference<ParamDef>[] = [];
     returnType?: ParameterType;
     scriptCode?: string;
@@ -268,7 +266,7 @@ export abstract class ElementContainer {
         if (el instanceof FunctionDef) {
             this.nameMap.set(el.name, el);
         }
-        this.elements.set(el.constructor.name + '/' + el.id, el);
+        this.elements.set(el.constructor.name + "/" + el.id, el);
     }
 
     public findElementByName(name: string): Element | undefined {
@@ -302,8 +300,8 @@ export abstract class ElementContainer {
         id: string,
         type?: { new (): T },
     ): T | undefined {
-        if (type && type.name !== 'Element') {
-            id = type.name + '/' + id;
+        if (type && type.name !== "Element") {
+            id = type.name + "/" + id;
         }
         return this.elements.get(id) as T;
     }
@@ -336,8 +334,8 @@ export type LibraryContainer = Map<string, Library>;
 export class TriggerStore extends ElementContainer {
     protected libraries: LibraryContainer = new Map<string, Library>();
     protected unresolvedReferences = new Map<
-    string,
-    ElementReference<Element>[]
+        string,
+        ElementReference<Element>[]
     >();
 
     public addElementReference(ref: ElementReference<Element>) {
@@ -346,8 +344,7 @@ export class TriggerStore extends ElementContainer {
         if (this.unresolvedReferences.has(link)) {
             const refList = this.unresolvedReferences.get(link);
             refList.push(ref);
-        }
-        else {
+        } else {
             this.unresolvedReferences.set(link, [ref]);
         }
     }
@@ -443,10 +440,10 @@ export class XMLReader {
     private parseParameterType(item: any): ParameterType {
         const element = new ParameterType();
         element.type = item.Type[0].$.Value;
-        if (element.type === 'gamelink' && item.GameType) {
+        if (element.type === "gamelink" && item.GameType) {
             element.gameType = item.GameType[0].$.Value;
         }
-        if (element.type === 'preset') {
+        if (element.type === "preset") {
             element.typeElement = this.parseReference(
                 item.TypeElement[0],
                 Preset,
@@ -475,7 +472,7 @@ export class XMLReader {
         let el: Element;
 
         switch (item.$.Type) {
-            case 'FunctionDef': {
+            case "FunctionDef": {
                 const func = (el = new FunctionDef());
 
                 func.flags |= item.FlagNative ? ElementFlag.Native : 0;
@@ -502,7 +499,7 @@ export class XMLReader {
 
                 if (item.Parameter) {
                     for (const param of item.Parameter) {
-                        if (param.$.Type === 'Comment') continue;
+                        if (param.$.Type === "Comment") continue;
                         func.parameters.push(
                             this.parseReference(param, ParamDef),
                         );
@@ -521,8 +518,8 @@ export class XMLReader {
                     if (whitespace) {
                         func.scriptCode = func.scriptCode
                             .trim()
-                            .replace(/\r?\n/g, '\n')
-                            .replace(new RegExp('^' + whitespace[1], 'gm'), '');
+                            .replace(/\r?\n/g, "\n")
+                            .replace(new RegExp("^" + whitespace[1], "gm"), "");
                     }
                 }
 
@@ -535,17 +532,17 @@ export class XMLReader {
                 }
                 break;
             }
-            case 'ParamDef': {
+            case "ParamDef": {
                 el = this.parseParamDef(item);
                 break;
             }
-            case 'Param':
+            case "Param":
                 el = this.parseParam(item);
                 break;
-            case 'FunctionCall':
+            case "FunctionCall":
                 el = this.parseFunctionCall(item);
                 break;
-            case 'Preset': {
+            case "Preset": {
                 const preset = (el = new Preset());
                 preset.flags |= item.PresetGenConstVar
                     ? ElementFlag.PresetGenConstVar
@@ -556,7 +553,7 @@ export class XMLReader {
                 preset.baseType = item.BaseType[0].$.Value;
                 if (item.Item) {
                     for (const val of item.Item) {
-                        if (val.$.Type !== 'PresetValue') continue;
+                        if (val.$.Type !== "PresetValue") continue;
                         preset.values.push(
                             this.parseReference(val, PresetValue),
                         );
@@ -567,17 +564,17 @@ export class XMLReader {
                 // item.$.PresetAsBits
                 break;
             }
-            case 'PresetValue': {
+            case "PresetValue": {
                 const presetValue = (el = new PresetValue());
                 if (item.Value) {
                     presetValue.value = item.Value[0];
                 }
                 break;
             }
-            case 'Category':
+            case "Category":
                 el = this.parseCategory(item);
                 break;
-            case 'Label':
+            case "Label":
                 el = this.parseLabel(item);
                 break;
             default: {
@@ -638,12 +635,10 @@ export class XMLReader {
             xml.parseString(content, (err, result) => {
                 if (err) {
                     reject(err);
-                }
-                else {
+                } else {
                     try {
                         resolve(result.TriggerData);
-                    }
-                    catch (err) {
+                    } catch (err) {
                         reject(err);
                     }
                 }

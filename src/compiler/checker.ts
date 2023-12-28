@@ -1,14 +1,25 @@
-import * as lsp from 'vscode-languageserver';
-import * as path from 'path';
-import URI from 'vscode-uri';
-import * as gt from './types';
-import { isComplexTypeKind } from '../compiler/utils';
-import { isDeclarationKind, forEachChild, isPartOfExpression, isRightSideOfPropertyAccess, findAncestor, createDiagnosticForNode, isAssignmentOperator, isComparisonOperator, isReferenceKeywordKind, findAncestorByKind } from './utils';
-import { Store, QualifiedSourceFile } from '../service/store';
-import { tokenToString } from './scanner';
-import { Printer } from './printer';
-import { declareSymbol, unbindSourceFile } from './binder';
-import { getLineAndCharacterOfPosition } from '../service/utils';
+import * as lsp from "vscode-languageserver";
+import * as path from "path";
+import URI from "vscode-uri";
+import * as gt from "./types";
+import { isComplexTypeKind } from "../compiler/utils";
+import {
+    isDeclarationKind,
+    forEachChild,
+    isPartOfExpression,
+    isRightSideOfPropertyAccess,
+    findAncestor,
+    createDiagnosticForNode,
+    isAssignmentOperator,
+    isComparisonOperator,
+    isReferenceKeywordKind,
+    findAncestorByKind,
+} from "./utils";
+import { Store, QualifiedSourceFile } from "../service/store";
+import { tokenToString } from "./scanner";
+import { Printer } from "./printer";
+import { declareSymbol, unbindSourceFile } from "./binder";
+import { getLineAndCharacterOfPosition } from "../service/utils";
 
 let nextSymbolId = 1;
 let nextNodeId = 1;
@@ -32,8 +43,8 @@ export function getSymbolId(symbol: gt.Symbol): number {
 }
 
 const enum CheckMode {
-    Normal = 0,                // Normal type checking
-    SkipContextSensitive = 1,  // Skip context sensitive function expressions
+    Normal = 0, // Normal type checking
+    SkipContextSensitive = 1, // Skip context sensitive function expressions
 }
 
 export abstract class AbstractType implements gt.Type {
@@ -44,7 +55,10 @@ export abstract class AbstractType implements gt.Type {
     public abstract isComparableTo(target: AbstractType): boolean;
     public abstract isBoolExpression(negation: boolean): boolean;
 
-    public isValidBinaryOperation(operation: gt.BinaryOperator, rightType: AbstractType) {
+    public isValidBinaryOperation(
+        operation: gt.BinaryOperator,
+        rightType: AbstractType,
+    ) {
         return false;
     }
 
@@ -88,16 +102,40 @@ export class IntrinsicType extends AbstractType {
         if (this === target) return true;
 
         if (target instanceof IntrinsicType) {
-            if (target.flags & gt.TypeFlags.Fixed && (this.flags & gt.TypeFlags.Integer || this.flags & gt.TypeFlags.Byte)) return true;
-            if (target.flags & gt.TypeFlags.Integer && (this.flags & gt.TypeFlags.Byte)) return true;
-            if (target.flags & gt.TypeFlags.Byte && (this.flags & gt.TypeFlags.Integer)) return true;
-            if (this.flags & gt.TypeFlags.Boolean && target.flags & gt.TypeFlags.Boolean) return true;
-        }
-        else if (target instanceof ComplexType) {
-            if (this.flags & gt.TypeFlags.String && target.kind === gt.SyntaxKind.HandleKeyword) return true;
+            if (
+                target.flags & gt.TypeFlags.Fixed &&
+                (this.flags & gt.TypeFlags.Integer ||
+                    this.flags & gt.TypeFlags.Byte)
+            )
+                return true;
+            if (
+                target.flags & gt.TypeFlags.Integer &&
+                this.flags & gt.TypeFlags.Byte
+            )
+                return true;
+            if (
+                target.flags & gt.TypeFlags.Byte &&
+                this.flags & gt.TypeFlags.Integer
+            )
+                return true;
+            if (
+                this.flags & gt.TypeFlags.Boolean &&
+                target.flags & gt.TypeFlags.Boolean
+            )
+                return true;
+        } else if (target instanceof ComplexType) {
+            if (
+                this.flags & gt.TypeFlags.String &&
+                target.kind === gt.SyntaxKind.HandleKeyword
+            )
+                return true;
         }
 
-        if (this.flags & gt.TypeFlags.Null && target.flags & gt.TypeFlags.Nullable) return true;
+        if (
+            this.flags & gt.TypeFlags.Null &&
+            target.flags & gt.TypeFlags.Nullable
+        )
+            return true;
 
         return false;
     }
@@ -107,15 +145,27 @@ export class IntrinsicType extends AbstractType {
 
         if (target instanceof IntrinsicType) {
             if (
-                (this.flags & gt.TypeFlags.Integer || this.flags & gt.TypeFlags.Byte || this.flags & gt.TypeFlags.Fixed) &&
-                (target.flags & gt.TypeFlags.Integer || target.flags & gt.TypeFlags.Byte || target.flags & gt.TypeFlags.Fixed)
+                (this.flags & gt.TypeFlags.Integer ||
+                    this.flags & gt.TypeFlags.Byte ||
+                    this.flags & gt.TypeFlags.Fixed) &&
+                (target.flags & gt.TypeFlags.Integer ||
+                    target.flags & gt.TypeFlags.Byte ||
+                    target.flags & gt.TypeFlags.Fixed)
             ) {
                 return true;
             }
-            if (this.flags & gt.TypeFlags.Boolean && target.flags & gt.TypeFlags.Boolean) return true;
+            if (
+                this.flags & gt.TypeFlags.Boolean &&
+                target.flags & gt.TypeFlags.Boolean
+            )
+                return true;
         }
 
-        if (this.flags & gt.TypeFlags.Null && target.flags & gt.TypeFlags.Nullable) return true;
+        if (
+            this.flags & gt.TypeFlags.Null &&
+            target.flags & gt.TypeFlags.Nullable
+        )
+            return true;
 
         return false;
     }
@@ -124,8 +174,15 @@ export class IntrinsicType extends AbstractType {
         return true;
     }
 
-    public isValidBinaryOperation(operation: gt.BinaryOperator, rightType: AbstractType) {
-        if (this === rightType || (rightType instanceof LiteralType && rightType.value.kind === gt.SyntaxKind.StringLiteral)) {
+    public isValidBinaryOperation(
+        operation: gt.BinaryOperator,
+        rightType: AbstractType,
+    ) {
+        if (
+            this === rightType ||
+            (rightType instanceof LiteralType &&
+                rightType.value.kind === gt.SyntaxKind.StringLiteral)
+        ) {
             switch (operation) {
                 case gt.SyntaxKind.PlusToken:
                     if (this.flags & gt.TypeFlags.String) return true;
@@ -134,16 +191,16 @@ export class IntrinsicType extends AbstractType {
 
         if (
             this === rightType ||
-            (rightType.flags & gt.TypeFlags.Numeric) ||
-            (rightType instanceof LiteralType && rightType.value.kind === gt.SyntaxKind.NumericLiteral)
+            rightType.flags & gt.TypeFlags.Numeric ||
+            (rightType instanceof LiteralType &&
+                rightType.value.kind === gt.SyntaxKind.NumericLiteral)
         ) {
             switch (operation) {
                 case gt.SyntaxKind.PlusToken:
                 case gt.SyntaxKind.MinusToken:
                 case gt.SyntaxKind.AsteriskToken:
                 case gt.SyntaxKind.PercentToken:
-                case gt.SyntaxKind.SlashToken:
-                {
+                case gt.SyntaxKind.SlashToken: {
                     if (this.flags & gt.TypeFlags.Numeric) {
                         return true;
                     }
@@ -152,20 +209,24 @@ export class IntrinsicType extends AbstractType {
 
                 case gt.SyntaxKind.AmpersandToken:
                 case gt.SyntaxKind.BarToken:
-                case gt.SyntaxKind.CaretToken:
-                {
+                case gt.SyntaxKind.CaretToken: {
                     // must be same type (either byte and byte, or int and int)
-                    if ((this.flags & gt.TypeFlags.IntLike) === (rightType.flags & gt.TypeFlags.IntLike)) {
+                    if (
+                        (this.flags & gt.TypeFlags.IntLike) ===
+                        (rightType.flags & gt.TypeFlags.IntLike)
+                    ) {
                         return true;
                     }
                     break;
                 }
 
                 case gt.SyntaxKind.LessThanLessThanToken:
-                case gt.SyntaxKind.GreaterThanGreaterThanToken:
-                {
+                case gt.SyntaxKind.GreaterThanGreaterThanToken: {
                     // no strict type checking, can implictly cast from byte to int
-                    if ((this.flags & gt.TypeFlags.IntLike) && (rightType.flags & gt.TypeFlags.IntLike)) {
+                    if (
+                        this.flags & gt.TypeFlags.IntLike &&
+                        rightType.flags & gt.TypeFlags.IntLike
+                    ) {
                         return true;
                     }
                     break;
@@ -187,11 +248,27 @@ export class IntrinsicType extends AbstractType {
         switch (operation) {
             case gt.SyntaxKind.PlusToken:
             case gt.SyntaxKind.MinusToken:
-                if (this.flags & gt.TypeFlags.Integer || this.flags & gt.TypeFlags.Byte || this.flags & gt.TypeFlags.Fixed) return true;
+                if (
+                    this.flags & gt.TypeFlags.Integer ||
+                    this.flags & gt.TypeFlags.Byte ||
+                    this.flags & gt.TypeFlags.Fixed
+                )
+                    return true;
             case gt.SyntaxKind.TildeToken:
-                if (this.flags & gt.TypeFlags.Integer || this.flags & gt.TypeFlags.Byte) return true;
+                if (
+                    this.flags & gt.TypeFlags.Integer ||
+                    this.flags & gt.TypeFlags.Byte
+                )
+                    return true;
             case gt.SyntaxKind.ExclamationToken:
-                if (this.flags & gt.TypeFlags.Integer || this.flags & gt.TypeFlags.Byte || this.flags & gt.TypeFlags.Fixed || this.flags & gt.TypeFlags.Boolean || this.flags & gt.TypeFlags.String) return true;
+                if (
+                    this.flags & gt.TypeFlags.Integer ||
+                    this.flags & gt.TypeFlags.Byte ||
+                    this.flags & gt.TypeFlags.Fixed ||
+                    this.flags & gt.TypeFlags.Boolean ||
+                    this.flags & gt.TypeFlags.String
+                )
+                    return true;
         }
     }
 
@@ -258,11 +335,16 @@ export class ComplexType extends AbstractType implements gt.ComplexType {
         if (this === target) return true;
 
         if (target instanceof ComplexType) {
-            if (target.kind === gt.SyntaxKind.HandleKeyword) return this.extendsHandle;
-            if (this.kind === gt.SyntaxKind.HandleKeyword) return target.extendsHandle;
-        }
-        else {
-            if (this.kind === gt.SyntaxKind.HandleKeyword && target.flags & gt.TypeFlags.String) return true;
+            if (target.kind === gt.SyntaxKind.HandleKeyword)
+                return this.extendsHandle;
+            if (this.kind === gt.SyntaxKind.HandleKeyword)
+                return target.extendsHandle;
+        } else {
+            if (
+                this.kind === gt.SyntaxKind.HandleKeyword &&
+                target.flags & gt.TypeFlags.String
+            )
+                return true;
         }
 
         // if (target.flags && gt.TypeFlags.Null && this.flags & gt.TypeFlags.Nullable) return true;
@@ -272,7 +354,12 @@ export class ComplexType extends AbstractType implements gt.ComplexType {
 
     public isComparableTo(target: AbstractType) {
         if (this === target) return true;
-        if (target.flags && gt.TypeFlags.Null && this.flags & gt.TypeFlags.Nullable) return true;
+        if (
+            target.flags &&
+            gt.TypeFlags.Null &&
+            this.flags & gt.TypeFlags.Nullable
+        )
+            return true;
         return false;
     }
 
@@ -288,12 +375,14 @@ export class ComplexType extends AbstractType implements gt.ComplexType {
         return true;
     }
 
-    public isValidBinaryOperation(operation: gt.BinaryOperator, rightType: AbstractType) {
+    public isValidBinaryOperation(
+        operation: gt.BinaryOperator,
+        rightType: AbstractType,
+    ) {
         if (this !== rightType) return false;
 
         switch (operation) {
-            case gt.SyntaxKind.PlusToken:
-            {
+            case gt.SyntaxKind.PlusToken: {
                 switch (this.kind) {
                     case gt.SyntaxKind.TextKeyword:
                     case gt.SyntaxKind.PointKeyword:
@@ -301,8 +390,7 @@ export class ComplexType extends AbstractType implements gt.ComplexType {
                 }
                 break;
             }
-            case gt.SyntaxKind.MinusToken:
-            {
+            case gt.SyntaxKind.MinusToken: {
                 switch (this.kind) {
                     case gt.SyntaxKind.PointKeyword:
                         return true;
@@ -339,20 +427,30 @@ export class LiteralType extends AbstractType {
     public isAssignableTo(target: AbstractType) {
         if (this === target) return true;
 
-        if (this.value.kind === gt.SyntaxKind.StringLiteral && target.flags & gt.TypeFlags.String) {
+        if (
+            this.value.kind === gt.SyntaxKind.StringLiteral &&
+            target.flags & gt.TypeFlags.String
+        ) {
             return true;
         }
-        if (this.value.kind === gt.SyntaxKind.NumericLiteral && (
-            target.flags & gt.TypeFlags.Byte ||
-            target.flags & gt.TypeFlags.Integer ||
-            target.flags & gt.TypeFlags.Fixed
-        )) {
-            if (this.value.text.indexOf('.') !== -1 && !(target.flags & gt.TypeFlags.Fixed)) {
+        if (
+            this.value.kind === gt.SyntaxKind.NumericLiteral &&
+            (target.flags & gt.TypeFlags.Byte ||
+                target.flags & gt.TypeFlags.Integer ||
+                target.flags & gt.TypeFlags.Fixed)
+        ) {
+            if (
+                this.value.text.indexOf(".") !== -1 &&
+                !(target.flags & gt.TypeFlags.Fixed)
+            ) {
                 return false;
             }
             return true;
         }
-        if (this.flags & gt.TypeFlags.Null && target.flags & gt.TypeFlags.Nullable) {
+        if (
+            this.flags & gt.TypeFlags.Null &&
+            target.flags & gt.TypeFlags.Nullable
+        ) {
             return true;
         }
 
@@ -362,15 +460,20 @@ export class LiteralType extends AbstractType {
     public isComparableTo(target: AbstractType) {
         if (this === target) return true;
 
-        if (this.value.kind === gt.SyntaxKind.NumericLiteral && (
-            target.flags & gt.TypeFlags.Byte ||
-            target.flags & gt.TypeFlags.Integer ||
-            target.flags & gt.TypeFlags.Fixed
-        )) {
+        if (
+            this.value.kind === gt.SyntaxKind.NumericLiteral &&
+            (target.flags & gt.TypeFlags.Byte ||
+                target.flags & gt.TypeFlags.Integer ||
+                target.flags & gt.TypeFlags.Fixed)
+        ) {
             return true;
         }
 
-        if (target instanceof LiteralType && this.value.kind === target.value.kind) return true;
+        if (
+            target instanceof LiteralType &&
+            this.value.kind === target.value.kind
+        )
+            return true;
 
         return this.isAssignableTo(target);
     }
@@ -379,20 +482,20 @@ export class LiteralType extends AbstractType {
         return true;
     }
 
-    public isValidBinaryOperation(operation: gt.BinaryOperator, rightType: AbstractType) {
+    public isValidBinaryOperation(
+        operation: gt.BinaryOperator,
+        rightType: AbstractType,
+    ) {
         let type: IntrinsicType;
         if (this.value.kind === gt.SyntaxKind.NumericLiteral) {
             if (this.flags & gt.TypeFlags.Fixed) {
                 type = fixedType;
-            }
-            else {
+            } else {
                 type = integerType;
             }
-        }
-        else if (this.value.kind === gt.SyntaxKind.StringLiteral) {
+        } else if (this.value.kind === gt.SyntaxKind.StringLiteral) {
             type = stringType;
-        }
-        else {
+        } else {
             return false;
         }
 
@@ -404,15 +507,12 @@ export class LiteralType extends AbstractType {
         if (this.value.kind === gt.SyntaxKind.NumericLiteral) {
             if (this.flags & gt.TypeFlags.Fixed) {
                 type = fixedType;
-            }
-            else {
+            } else {
                 type = integerType;
             }
-        }
-        else if (this.value.kind === gt.SyntaxKind.StringLiteral) {
+        } else if (this.value.kind === gt.SyntaxKind.StringLiteral) {
             type = stringType;
-        }
-        else {
+        } else {
             return false;
         }
 
@@ -420,22 +520,18 @@ export class LiteralType extends AbstractType {
     }
 
     public getName() {
-        let typeDesc = 'unknown';
+        let typeDesc = "unknown";
 
         if (this.flags & gt.TypeFlags.String) {
-            typeDesc = 'string';
-        }
-        else if (this.flags & gt.TypeFlags.Integer) {
-            typeDesc = 'integer';
-        }
-        else if (this.flags & gt.TypeFlags.Byte) {
-            typeDesc = 'byte';
-        }
-        else if (this.flags & gt.TypeFlags.Fixed) {
-            typeDesc = 'fixed';
-        }
-        else if (this.flags & gt.TypeFlags.Boolean) {
-            typeDesc = 'bool';
+            typeDesc = "string";
+        } else if (this.flags & gt.TypeFlags.Integer) {
+            typeDesc = "integer";
+        } else if (this.flags & gt.TypeFlags.Byte) {
+            typeDesc = "byte";
+        } else if (this.flags & gt.TypeFlags.Fixed) {
+            typeDesc = "fixed";
+        } else if (this.flags & gt.TypeFlags.Boolean) {
+            typeDesc = "bool";
         }
 
         return `${this.value.text} [${typeDesc}]`;
@@ -452,7 +548,11 @@ export class StructType extends AbstractType implements gt.StructType {
     }
 
     public isAssignableTo(target: AbstractType) {
-        if (target instanceof ReferenceType && target.kind === gt.SyntaxKind.StructrefKeyword && this.symbol === (<StructType>target.declaredType).symbol) {
+        if (
+            target instanceof ReferenceType &&
+            target.kind === gt.SyntaxKind.StructrefKeyword &&
+            this.symbol === (<StructType>target.declaredType).symbol
+        ) {
             return true;
         }
         return false;
@@ -460,7 +560,8 @@ export class StructType extends AbstractType implements gt.StructType {
 
     public isComparableTo(target: AbstractType) {
         if (this === target) return true;
-        if (target instanceof StructType && target.symbol === this.symbol) return true;
+        if (target instanceof StructType && target.symbol === this.symbol)
+            return true;
         return false;
     }
 
@@ -496,7 +597,7 @@ export class SignatureMeta {
         for (const p of this.args) {
             params.push(p.getName());
         }
-        return `${this.returnType.getName()} (${params.join(',')})`;
+        return `${this.returnType.getName()} (${params.join(",")})`;
     }
 }
 
@@ -512,17 +613,25 @@ export class FunctionType extends AbstractType implements gt.FunctionType {
     }
 
     public isAssignableTo(target: AbstractType): boolean {
-        if (target instanceof ReferenceType && target.kind === gt.SyntaxKind.FuncrefKeyword) {
-            if (!(target.declaredType.flags & gt.TypeFlags.Function)) return false;
-            return this.isComparableTo((<FunctionType>target.declaredType));
+        if (
+            target instanceof ReferenceType &&
+            target.kind === gt.SyntaxKind.FuncrefKeyword
+        ) {
+            if (!(target.declaredType.flags & gt.TypeFlags.Function))
+                return false;
+            return this.isComparableTo(<FunctionType>target.declaredType);
         }
         return false;
     }
 
     public isComparableTo(target: AbstractType): boolean {
-        if (target instanceof ReferenceType && target.kind === gt.SyntaxKind.FuncrefKeyword) {
-            if (!(target.declaredType.flags & gt.TypeFlags.Function)) return false;
-            return this.isComparableTo((<FunctionType>target.declaredType));
+        if (
+            target instanceof ReferenceType &&
+            target.kind === gt.SyntaxKind.FuncrefKeyword
+        ) {
+            if (!(target.declaredType.flags & gt.TypeFlags.Function))
+                return false;
+            return this.isComparableTo(<FunctionType>target.declaredType);
         }
         if (target instanceof FunctionType) {
             if (this.symbol === target.symbol) return true;
@@ -540,7 +649,10 @@ export class FunctionType extends AbstractType implements gt.FunctionType {
     }
 }
 
-export type ReferenceKind = gt.SyntaxKind.FuncrefKeyword | gt.SyntaxKind.StructrefKeyword | gt.SyntaxKind.ArrayrefKeyword;
+export type ReferenceKind =
+    | gt.SyntaxKind.FuncrefKeyword
+    | gt.SyntaxKind.StructrefKeyword
+    | gt.SyntaxKind.ArrayrefKeyword;
 
 export class ReferenceType extends AbstractType {
     kind: ReferenceKind;
@@ -571,7 +683,9 @@ export class ReferenceType extends AbstractType {
         }
         if (target instanceof FunctionType) {
             if (this.kind === gt.SyntaxKind.FuncrefKeyword) {
-                return (<FunctionType>this.declaredType).signature.match(target.signature);
+                return (<FunctionType>this.declaredType).signature.match(
+                    target.signature,
+                );
             }
         }
         return false;
@@ -582,7 +696,9 @@ export class ReferenceType extends AbstractType {
     }
 
     public getName() {
-        return tokenToString(this.kind) + '<' + this.declaredType.getName() + '>';
+        return (
+            tokenToString(this.kind) + "<" + this.declaredType.getName() + ">"
+        );
     }
 }
 
@@ -596,13 +712,20 @@ export class ArrayType extends AbstractType implements gt.ArrayType {
     }
 
     public isAssignableTo(target: AbstractType): boolean {
-        if (target instanceof ReferenceType && target.kind === gt.SyntaxKind.ArrayrefKeyword) {
+        if (
+            target instanceof ReferenceType &&
+            target.kind === gt.SyntaxKind.ArrayrefKeyword
+        ) {
             // multi-dimensional array
             if (this.elementType instanceof ArrayType) {
                 return this.getName() === target.declaredType.getName();
             }
             // intrinsic type / whatever else
-            if (this.elementType === (<ArrayType>target.declaredType).elementType) return true;
+            if (
+                this.elementType ===
+                (<ArrayType>target.declaredType).elementType
+            )
+                return true;
         }
         return false;
     }
@@ -616,7 +739,7 @@ export class ArrayType extends AbstractType implements gt.ArrayType {
     }
 
     public getName() {
-        return this.elementType.getName() + '[]';
+        return this.elementType.getName() + "[]";
     }
 }
 
@@ -655,22 +778,32 @@ function createSymbol(flags: gt.SymbolFlags, name: string): gt.Symbol {
 }
 
 const unknownType = new UnknownType();
-const nullType = new IntrinsicType(gt.TypeFlags.Null | gt.TypeFlags.Nullable, 'null');
-const boolType = new IntrinsicType(gt.TypeFlags.Boolean, 'bool');
-const trueType = new IntrinsicType(gt.TypeFlags.Boolean, 'true');
-const falseType = new IntrinsicType(gt.TypeFlags.Boolean, 'false');
-const stringType = new IntrinsicType(gt.TypeFlags.String | gt.TypeFlags.Nullable, 'string');
-const integerType = new IntrinsicType(gt.TypeFlags.Integer, 'integer');
-const byteType = new IntrinsicType(gt.TypeFlags.Byte, 'byte');
-const fixedType = new IntrinsicType(gt.TypeFlags.Fixed, 'fixed');
-const voidType = new IntrinsicType(gt.TypeFlags.Void, 'void');
+const nullType = new IntrinsicType(
+    gt.TypeFlags.Null | gt.TypeFlags.Nullable,
+    "null",
+);
+const boolType = new IntrinsicType(gt.TypeFlags.Boolean, "bool");
+const trueType = new IntrinsicType(gt.TypeFlags.Boolean, "true");
+const falseType = new IntrinsicType(gt.TypeFlags.Boolean, "false");
+const stringType = new IntrinsicType(
+    gt.TypeFlags.String | gt.TypeFlags.Nullable,
+    "string",
+);
+const integerType = new IntrinsicType(gt.TypeFlags.Integer, "integer");
+const byteType = new IntrinsicType(gt.TypeFlags.Byte, "byte");
+const fixedType = new IntrinsicType(gt.TypeFlags.Fixed, "fixed");
+const voidType = new IntrinsicType(gt.TypeFlags.Void, "void");
 
 const complexTypes = generateComplexTypes();
 
 function generateComplexTypes() {
     const map = new Map<gt.SyntaxKind, ComplexType>();
 
-    for (let i = gt.SyntaxKindMarker.FirstComplexType; i <= gt.SyntaxKindMarker.LastComplexType; i++) {
+    for (
+        let i = gt.SyntaxKindMarker.FirstComplexType;
+        i <= gt.SyntaxKindMarker.LastComplexType;
+        i++
+    ) {
         const ckind = <gt.SyntaxKind>(<any>i);
         map.set(ckind, new ComplexType(ckind));
     }
@@ -691,7 +824,12 @@ export class TypeChecker {
         this.currentDocuments = this.store.documents;
     }
 
-    private report(location: gt.Node, msg: string, category: gt.DiagnosticCategory = gt.DiagnosticCategory.Error, tags?: lsp.DiagnosticTag[]): void {
+    private report(
+        location: gt.Node,
+        msg: string,
+        category: gt.DiagnosticCategory = gt.DiagnosticCategory.Error,
+        tags?: lsp.DiagnosticTag[],
+    ): void {
         const d = createDiagnosticForNode(location, category, msg, tags);
         const c = this.diagnostics.get(d.file.fileName);
         if (c) c.push(d);
@@ -699,35 +837,70 @@ export class TypeChecker {
 
     private getNodeLinks(node: gt.Node): gt.NodeLinks {
         const nodeId = getNodeId(node);
-        return this.nodeLinks[nodeId] || (this.nodeLinks[nodeId] = { flags: 0 });
+        return (
+            this.nodeLinks[nodeId] || (this.nodeLinks[nodeId] = { flags: 0 })
+        );
     }
 
-    private checkTypeAssignableTo(source: AbstractType, target: AbstractType, node: gt.Node) {
+    private checkTypeAssignableTo(
+        source: AbstractType,
+        target: AbstractType,
+        node: gt.Node,
+    ) {
         // TODO: error when using local var as reference
         if (source === unknownType || target === unknownType) return;
         if (!source.isAssignableTo(target)) {
-            this.report(node, 'Type \'' + source.getName() + '\' is not assignable to type \'' + target.getName() + '\'');
+            this.report(
+                node,
+                "Type '" +
+                    source.getName() +
+                    "' is not assignable to type '" +
+                    target.getName() +
+                    "'",
+            );
         }
     }
 
-    private checkTypeComparableTo(source: AbstractType, target: AbstractType, node: gt.Node) {
+    private checkTypeComparableTo(
+        source: AbstractType,
+        target: AbstractType,
+        node: gt.Node,
+    ) {
         if (source === unknownType || target === unknownType) return;
         if (!source.isComparableTo(target)) {
-            this.report(node, 'Type \'' + source.getName() + '\' is not comparable to type \'' + target.getName() + '\'');
+            this.report(
+                node,
+                "Type '" +
+                    source.getName() +
+                    "' is not comparable to type '" +
+                    target.getName() +
+                    "'",
+            );
         }
     }
 
-    private checkTypeBoolExpression(source: AbstractType, negation: boolean, node: gt.Node) {
+    private checkTypeBoolExpression(
+        source: AbstractType,
+        negation: boolean,
+        node: gt.Node,
+    ) {
         if (source === unknownType) return;
         if (!source.isBoolExpression(negation)) {
-            this.report(node, 'Type \'' + source.getName() + '\' can not be used as boolean expression');
+            this.report(
+                node,
+                "Type '" +
+                    source.getName() +
+                    "' can not be used as boolean expression",
+            );
         }
     }
 
     private getTypeFromArrayTypeNode(node: gt.ArrayTypeNode): ArrayType {
         const links = this.getNodeLinks(node);
         if (!links.resolvedType) {
-            links.resolvedType = new ArrayType(this.getTypeFromTypeNode(node.elementType));
+            links.resolvedType = new ArrayType(
+                this.getTypeFromTypeNode(node.elementType),
+            );
         }
         return <ArrayType>links.resolvedType;
     }
@@ -737,7 +910,9 @@ export class TypeChecker {
         if (!links.resolvedType) {
             links.resolvedType = new ReferenceType(
                 <ReferenceKind>node.returnType.kind,
-                node.typeArguments.length ? this.getTypeFromTypeNode(node.typeArguments[0]) : unknownType
+                node.typeArguments.length
+                    ? this.getTypeFromTypeNode(node.typeArguments[0])
+                    : unknownType,
             );
         }
         return <ReferenceType>links.resolvedType;
@@ -750,7 +925,10 @@ export class TypeChecker {
         return type;
     }
 
-    private getPropertyOfType(type: AbstractType, name: string): gt.Symbol | undefined {
+    private getPropertyOfType(
+        type: AbstractType,
+        name: string,
+    ): gt.Symbol | undefined {
         if (type && type.flags & gt.TypeFlags.Struct) {
             if (type.symbol.members.has(name)) {
                 return type.symbol.members.get(name);
@@ -768,7 +946,7 @@ export class TypeChecker {
             this.getTypeFromTypeNode(fnDecl.type),
             fnDecl.parameters.map((param) => {
                 return this.getTypeFromTypeNode(param.type);
-            })
+            }),
         );
     }
 
@@ -779,23 +957,24 @@ export class TypeChecker {
     }
 
     private getTypeOfTypedef(symbol: gt.Symbol): AbstractType {
-        const refType = this.getTypeFromTypeNode((<gt.TypedefDeclaration>symbol.declarations[0]).type);
+        const refType = this.getTypeFromTypeNode(
+            (<gt.TypedefDeclaration>symbol.declarations[0]).type,
+        );
         return new TypedefType(refType);
     }
 
     private getDeclaredTypeOfSymbol(symbol: gt.Symbol): AbstractType {
-        if (symbol.flags & (gt.SymbolFlags.Struct)) {
+        if (symbol.flags & gt.SymbolFlags.Struct) {
             return this.getDeclaredTypeOfStruct(symbol);
-        }
-        else if (symbol.flags & (gt.SymbolFlags.Variable)) {
+        } else if (symbol.flags & gt.SymbolFlags.Variable) {
             return this.getTypeOfSymbol(symbol);
-        }
-        else if (symbol.flags & (gt.SymbolFlags.Function)) {
+        } else if (symbol.flags & gt.SymbolFlags.Function) {
             // should we introduce SignatureType that describes fn declaration and return it instead?
             return this.getTypeOfFunction(symbol);
-        }
-        else if (symbol.flags & (gt.SymbolFlags.Typedef)) {
-            return this.getTypeFromTypeNode((<gt.TypedefDeclaration>symbol.declarations[0]).type);
+        } else if (symbol.flags & gt.SymbolFlags.Typedef) {
+            return this.getTypeFromTypeNode(
+                (<gt.TypedefDeclaration>symbol.declarations[0]).type,
+            );
         }
         return unknownType;
     }
@@ -826,8 +1005,7 @@ export class TypeChecker {
                 const symbol = this.getSymbolAtLocation(node);
                 if (symbol) {
                     return this.getDeclaredTypeOfSymbol(symbol);
-                }
-                else {
+                } else {
                     return unknownType;
                 }
             default:
@@ -839,23 +1017,31 @@ export class TypeChecker {
     }
 
     private getTypeOfSymbol(symbol: gt.Symbol): AbstractType {
-        if ((symbol.flags & gt.SymbolFlags.Variable) || (symbol.flags & gt.SymbolFlags.Property)) {
+        if (
+            symbol.flags & gt.SymbolFlags.Variable ||
+            symbol.flags & gt.SymbolFlags.Property
+        ) {
             return this.getTypeOfVariableOrParameterOrProperty(symbol);
-        }
-        else if (symbol.flags & (gt.SymbolFlags.Function)) {
+        } else if (symbol.flags & gt.SymbolFlags.Function) {
             return this.getTypeOfFunction(symbol);
-        }
-        else if (symbol.flags & (gt.SymbolFlags.Typedef)) {
+        } else if (symbol.flags & gt.SymbolFlags.Typedef) {
             return this.getTypeOfTypedef(symbol);
         }
         return unknownType;
     }
 
-    private getTypeOfVariableOrParameterOrProperty(symbol: gt.Symbol): AbstractType {
-        return this.getTypeFromTypeNode((<gt.VariableDeclaration>symbol.declarations[0]).type);
+    private getTypeOfVariableOrParameterOrProperty(
+        symbol: gt.Symbol,
+    ): AbstractType {
+        return this.getTypeFromTypeNode(
+            (<gt.VariableDeclaration>symbol.declarations[0]).type,
+        );
     }
 
-    public getTypeOfNode(node: gt.Node, followRef: boolean = false): AbstractType {
+    public getTypeOfNode(
+        node: gt.Node,
+        followRef: boolean = false,
+    ): AbstractType {
         // TODO:
         // if (isPartOfTypeNode(node)) {
         //     return this.getTypeFromTypeNode(<TypeNode>node);
@@ -876,7 +1062,10 @@ export class TypeChecker {
         return this.getTypeOfExpression(expr);
     }
 
-    private getTypeOfExpression(node: gt.Expression, cache?: boolean): AbstractType {
+    private getTypeOfExpression(
+        node: gt.Expression,
+        cache?: boolean,
+    ): AbstractType {
         return this.checkExpression(node);
     }
 
@@ -890,8 +1079,14 @@ export class TypeChecker {
         this.diagnostics.set(sourceFile.fileName, []);
         this.currentDocuments = this.store.documents;
         if (bindSymbols) {
-            unbindSourceFile(sourceFile, { resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this) });
-            this.currentSymbolContainer = declareSymbol(sourceFile, { resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this) }, null);
+            unbindSourceFile(sourceFile, {
+                resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this),
+            });
+            this.currentSymbolContainer = declareSymbol(
+                sourceFile,
+                { resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this) },
+                null,
+            );
         }
         sourceFile.statements.forEach(this.checkSourceElement.bind(this));
         if (bindSymbols) {
@@ -901,14 +1096,22 @@ export class TypeChecker {
     }
 
     protected checkSourceFileRecursivelyWorker(sourceFile: gt.SourceFile) {
-        unbindSourceFile(sourceFile, { resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this) });
-        this.currentSymbolContainer = declareSymbol(sourceFile, { resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this) }, null);
+        unbindSourceFile(sourceFile, {
+            resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this),
+        });
+        this.currentSymbolContainer = declareSymbol(
+            sourceFile,
+            { resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this) },
+            null,
+        );
         this.diagnostics.set(sourceFile.fileName, []);
         this.currentDocuments.set(sourceFile.fileName, sourceFile);
 
         for (const statement of sourceFile.statements) {
             if (statement.kind === gt.SyntaxKind.IncludeStatement) {
-                const qsFile = this.checkIncludeStatement(<gt.IncludeStatement>statement);
+                const qsFile = this.checkIncludeStatement(
+                    <gt.IncludeStatement>statement,
+                );
                 if (qsFile && !this.currentDocuments.has(qsFile.fileName)) {
                     const currentSymbolContainer = this.currentSymbolContainer;
                     this.checkSourceFileRecursivelyWorker(qsFile);
@@ -925,15 +1128,23 @@ export class TypeChecker {
         this.currentDocuments = new Map<string, gt.SourceFile>();
 
         if (this.store.s2workspace) {
-            const coreMod = this.store.s2workspace.allArchives.find((archive) => archive.name === 'mods/core.sc2mod');
+            const coreMod = this.store.s2workspace.allArchives.find(
+                (archive) => archive.name === "mods/core.sc2mod",
+            );
             if (coreMod) {
-                const corePath = path.join(coreMod.directory, 'base.sc2data', 'TriggerLibs');
+                const corePath = path.join(
+                    coreMod.directory,
+                    "base.sc2data",
+                    "TriggerLibs",
+                );
                 const nativeScripts = [
-                    path.join(corePath, 'natives_missing.galaxy'),
-                    path.join(corePath, 'natives.galaxy'),
+                    path.join(corePath, "natives_missing.galaxy"),
+                    path.join(corePath, "natives.galaxy"),
                 ];
                 for (const fpath of nativeScripts) {
-                    const qFile = this.store.documents.get(URI.file(fpath).toString());
+                    const qFile = this.store.documents.get(
+                        URI.file(fpath).toString(),
+                    );
                     if (qFile) {
                         this.checkSourceFileRecursivelyWorker(qFile);
                     }
@@ -946,21 +1157,29 @@ export class TypeChecker {
         this.checkForUnusedLocalDefinitions(this.currentSymbolContainer);
 
         return {
-            success: Array.from(this.diagnostics.values()).findIndex((value, index) => value.length > 0) === -1,
+            success:
+                Array.from(this.diagnostics.values()).findIndex(
+                    (value, index) => value.length > 0,
+                ) === -1,
             diagnostics: this.diagnostics,
-            sourceFiles: <Map<string, QualifiedSourceFile>>this.currentDocuments,
+            sourceFiles: <Map<string, QualifiedSourceFile>>(
+                this.currentDocuments
+            ),
         };
     }
 
     private checkForIdentifierDefinitions() {
         for (const [symbol, symRef] of this.currentSymbolReferences) {
-            if ((symbol.flags & gt.SymbolFlags.Function)) {
-                if ((symbol.flags & gt.SymbolFlags.Native)) continue;
+            if (symbol.flags & gt.SymbolFlags.Function) {
+                if (symbol.flags & gt.SymbolFlags.Native) continue;
                 if (!symRef.size) continue;
                 if (symbol.valueDeclaration) continue;
 
                 for (const identifier of symRef) {
-                    this.report(identifier, `Referenced function '${identifier.name}' hasn't been defined.`);
+                    this.report(
+                        identifier,
+                        `Referenced function '${identifier.name}' hasn't been defined.`,
+                    );
                 }
             }
         }
@@ -971,9 +1190,12 @@ export class TypeChecker {
         if (symbol.flags & gt.SymbolFlags.Variable) {
             if (symRef && symRef.size > 1) return;
             if (
-                ((symbol.flags & gt.SymbolFlags.GlobalVariable) && !(symbol.flags & gt.SymbolFlags.Static)) ||
-                ((symbol.flags & gt.SymbolFlags.LocalVariable) && !(symbol.parent?.flags & gt.SymbolFlags.Function)) ||
-                ((symbol.flags & gt.SymbolFlags.FunctionParameter) && (symbol.parent?.flags & gt.SymbolFlags.Function))
+                (symbol.flags & gt.SymbolFlags.GlobalVariable &&
+                    !(symbol.flags & gt.SymbolFlags.Static)) ||
+                (symbol.flags & gt.SymbolFlags.LocalVariable &&
+                    !(symbol.parent?.flags & gt.SymbolFlags.Function)) ||
+                (symbol.flags & gt.SymbolFlags.FunctionParameter &&
+                    symbol.parent?.flags & gt.SymbolFlags.Function)
             ) {
                 return;
             }
@@ -985,7 +1207,7 @@ export class TypeChecker {
                         nameDecl.name,
                         `'${symbol.escapedName}' variable is defined but never used.`,
                         gt.DiagnosticCategory.Hint,
-                        [lsp.DiagnosticTag.Unnecessary]
+                        [lsp.DiagnosticTag.Unnecessary],
                     );
                 }
             }
@@ -996,7 +1218,10 @@ export class TypeChecker {
         if (!rootSym) return;
         for (const currSym of this.currentSymbolContainer.members.values()) {
             this.checkIsSymbolDeclarationDefined(currSym);
-            if (currSym.flags & gt.SymbolFlags.Function && currSym.valueDeclaration) {
+            if (
+                currSym.flags & gt.SymbolFlags.Function &&
+                currSym.valueDeclaration
+            ) {
                 for (const childSym of currSym.members.values()) {
                     this.checkIsSymbolDeclarationDefined(childSym);
                     // this.checkForUnusedLocalDefinitions(childSym);
@@ -1009,37 +1234,57 @@ export class TypeChecker {
         let prevSymbolContainer = null;
         if (this.currentSymbolContainer && isDeclarationKind(node.kind)) {
             prevSymbolContainer = this.currentSymbolContainer;
-            this.currentSymbolContainer = declareSymbol(node, { resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this) }, prevSymbolContainer);
+            this.currentSymbolContainer = declareSymbol(
+                node,
+                { resolveGlobalSymbol: this.resolveGlobalSymbol.bind(this) },
+                prevSymbolContainer,
+            );
             if (this.currentSymbolContainer.declarations.length > 1) {
                 let previousDeclaration: gt.Declaration;
                 if (node.kind === gt.SyntaxKind.FunctionDeclaration) {
                     for (const pd of this.currentSymbolContainer.declarations) {
                         if (pd === node) continue;
-                        if (pd.kind === gt.SyntaxKind.FunctionDeclaration && (
-                            !(<gt.FunctionDeclaration>pd).body || !(<gt.FunctionDeclaration>node).body
-                        )) {
+                        if (
+                            pd.kind === gt.SyntaxKind.FunctionDeclaration &&
+                            (!(<gt.FunctionDeclaration>pd).body ||
+                                !(<gt.FunctionDeclaration>node).body)
+                        ) {
                             continue;
                         }
                         previousDeclaration = pd;
                         break;
                     }
-                }
-                else if (node.kind === gt.SyntaxKind.ParameterDeclaration) {
+                } else if (node.kind === gt.SyntaxKind.ParameterDeclaration) {
                     for (const pd of this.currentSymbolContainer.declarations) {
                         if (pd === node) continue;
                         if (pd.parent !== node.parent) continue;
                         previousDeclaration = pd;
                         break;
                     }
-                }
-                else {
-                    previousDeclaration = this.currentSymbolContainer.declarations[this.currentSymbolContainer.declarations.length - 2];
+                } else {
+                    previousDeclaration =
+                        this.currentSymbolContainer.declarations[
+                            this.currentSymbolContainer.declarations.length - 2
+                        ];
                 }
 
                 if (previousDeclaration) {
-                    const prevSourceFile = <gt.SourceFile>findAncestorByKind(previousDeclaration, gt.SyntaxKind.SourceFile);
-                    const prevPos = getLineAndCharacterOfPosition(prevSourceFile, previousDeclaration.pos);
-                    this.report((<gt.NamedDeclaration>node).name, `Symbol redeclared, previous declaration in ${prevSourceFile.fileName}:${prevPos.line + 1},${prevPos.character + 1}`);
+                    const prevSourceFile = <gt.SourceFile>(
+                        findAncestorByKind(
+                            previousDeclaration,
+                            gt.SyntaxKind.SourceFile,
+                        )
+                    );
+                    const prevPos = getLineAndCharacterOfPosition(
+                        prevSourceFile,
+                        previousDeclaration.pos,
+                    );
+                    this.report(
+                        (<gt.NamedDeclaration>node).name,
+                        `Symbol redeclared, previous declaration in ${
+                            prevSourceFile.fileName
+                        }:${prevPos.line + 1},${prevPos.character + 1}`,
+                    );
                 }
             }
         }
@@ -1084,7 +1329,9 @@ export class TypeChecker {
                 break;
             case gt.SyntaxKind.BreakStatement:
             case gt.SyntaxKind.ContinueStatement:
-                this.checkBreakOrContinueStatement(<gt.BreakOrContinueStatement>node);
+                this.checkBreakOrContinueStatement(
+                    <gt.BreakOrContinueStatement>node,
+                );
                 break;
             case gt.SyntaxKind.ReturnStatement:
                 this.checkReturnStatement(<gt.ReturnStatement>node);
@@ -1098,23 +1345,28 @@ export class TypeChecker {
 
     private checkIncludeStatement(node: gt.IncludeStatement) {
         let path = node.path.value.toLowerCase();
-        let segments = path.split('.');
-        if (segments.length > 1 && segments[segments.length - 1] !== 'galaxy') {
-            this.report(node.path, 'Dot in a script name is not allowed, unless path ends with ".galaxy"', gt.DiagnosticCategory.Warning);
-        }
-        else {
-            path = path.replace(/\.galaxy$/, '');
+        let segments = path.split(".");
+        if (segments.length > 1 && segments[segments.length - 1] !== "galaxy") {
+            this.report(
+                node.path,
+                'Dot in a script name is not allowed, unless path ends with ".galaxy"',
+                gt.DiagnosticCategory.Warning,
+            );
+        } else {
+            path = path.replace(/\.galaxy$/, "");
         }
         const qsMap = this.store.qualifiedDocuments.get(path);
         if (!qsMap) {
-            this.report(node.path, 'Given filename couldn\'t be matched');
+            this.report(node.path, "Given filename couldn't be matched");
             return;
         }
 
         const qsFile = Array.from(qsMap.values())[0];
-        const currCourceFile = <gt.SourceFile>findAncestorByKind(node, gt.SyntaxKind.SourceFile);
+        const currCourceFile = <gt.SourceFile>(
+            findAncestorByKind(node, gt.SyntaxKind.SourceFile)
+        );
         if (currCourceFile === qsFile) {
-            this.report(node, 'Self-include', gt.DiagnosticCategory.Warning);
+            this.report(node, "Self-include", gt.DiagnosticCategory.Warning);
             return;
         }
 
@@ -1133,7 +1385,11 @@ export class TypeChecker {
             case gt.SyntaxKind.ArrayType:
                 return this.checkArrayType(<gt.ArrayTypeNode>node);
             case gt.SyntaxKind.Identifier:
-                return this.checkIdentifier(<gt.Identifier>node, false, false)[1];
+                return this.checkIdentifier(
+                    <gt.Identifier>node,
+                    false,
+                    false,
+                )[1];
         }
     }
 
@@ -1146,9 +1402,14 @@ export class TypeChecker {
         for (const prevDecl of node.symbol.declarations) {
             if (node === prevDecl) continue;
             if (prevDecl.kind !== gt.SyntaxKind.FunctionDeclaration) break;
-            const previousSignature = this.getSignatureOfFunction(<gt.FunctionDeclaration>prevDecl);
+            const previousSignature = this.getSignatureOfFunction(
+                <gt.FunctionDeclaration>prevDecl,
+            );
             if (!currentSignature.match(previousSignature)) {
-                this.report(node, `Function signature doesn't match it's previous declaration '${previousSignature.toString()}'`);
+                this.report(
+                    node,
+                    `Function signature doesn't match it's previous declaration '${previousSignature.toString()}'`,
+                );
                 break;
             }
         }
@@ -1160,32 +1421,54 @@ export class TypeChecker {
             this.checkBlock(node.body);
 
             if (!(rtype.flags & gt.TypeFlags.Void) && !node.body.hasReturn) {
-                this.report(node.name, 'Expected return statement');
+                this.report(node.name, "Expected return statement");
             }
         }
     }
 
-    private checkLocalDeclaration(node: gt.ParameterDeclaration | gt.VariableDeclaration | gt.PropertyDeclaration, symbol: gt.Symbol) {
-        const sourceFile = <gt.SourceFile>findAncestorByKind(node, gt.SyntaxKind.SourceFile);
+    private checkLocalDeclaration(
+        node:
+            | gt.ParameterDeclaration
+            | gt.VariableDeclaration
+            | gt.PropertyDeclaration,
+        symbol: gt.Symbol,
+    ) {
+        const sourceFile = <gt.SourceFile>(
+            findAncestorByKind(node, gt.SyntaxKind.SourceFile)
+        );
 
         if (
-            (symbol.flags & gt.SymbolFlags.FunctionScopedVariable) ||
-            (symbol.flags & gt.SymbolFlags.Property)
+            symbol.flags & gt.SymbolFlags.FunctionScopedVariable ||
+            symbol.flags & gt.SymbolFlags.Property
         ) {
-            const globalSym = this.resolveName(sourceFile, node.name.name, true);
+            const globalSym = this.resolveName(
+                sourceFile,
+                node.name.name,
+                true,
+            );
             if (globalSym) {
                 if (
-                    (globalSym.flags & gt.SymbolFlags.Function) ||
-                    (globalSym.flags & gt.SymbolFlags.Typedef)
+                    globalSym.flags & gt.SymbolFlags.Function ||
+                    globalSym.flags & gt.SymbolFlags.Typedef
                 ) {
-                    const orgSourceFile = <gt.SourceFile>findAncestorByKind(globalSym.declarations[0], gt.SyntaxKind.SourceFile);
-                    const orgPos = getLineAndCharacterOfPosition(orgSourceFile, globalSym.declarations[0].pos);
+                    const orgSourceFile = <gt.SourceFile>(
+                        findAncestorByKind(
+                            globalSym.declarations[0],
+                            gt.SyntaxKind.SourceFile,
+                        )
+                    );
+                    const orgPos = getLineAndCharacterOfPosition(
+                        orgSourceFile,
+                        globalSym.declarations[0].pos,
+                    );
                     this.report(
                         node.name,
                         [
                             `Name '${node.name.name}' redefined. Already in use in global scope.`,
-                            `See: ${path.basename(URI.parse(orgSourceFile.fileName).fsPath)}:${orgPos.line + 1},${orgPos.character + 1}`,
-                        ].join(' ')
+                            `See: ${path.basename(
+                                URI.parse(orgSourceFile.fileName).fsPath,
+                            )}:${orgPos.line + 1},${orgPos.character + 1}`,
+                        ].join(" "),
                     );
                 }
             }
@@ -1205,7 +1488,7 @@ export class TypeChecker {
 
         const type = this.getTypeFromTypeNode(node.type);
         if (type instanceof StructType || type instanceof FunctionType) {
-            this.report(node.type, 'Can only pass basic types');
+            this.report(node.type, "Can only pass basic types");
         }
     }
 
@@ -1219,9 +1502,14 @@ export class TypeChecker {
             this.checkTypeAssignableTo(exprType, varType, node.initializer);
         }
 
-        const isConstant = node.modifiers?.some((value) => value.kind === gt.SyntaxKind.ConstKeyword);
+        const isConstant = node.modifiers?.some(
+            (value) => value.kind === gt.SyntaxKind.ConstKeyword,
+        );
         if (isConstant && declType instanceof TypedefType) {
-            this.report(node.type, 'Constant variables cannot reference Typedefs');
+            this.report(
+                node.type,
+                "Constant variables cannot reference Typedefs",
+            );
         }
 
         if (symbol) {
@@ -1237,9 +1525,11 @@ export class TypeChecker {
         if (node.kind === gt.SyntaxKind.MappedType) {
             switch ((<gt.MappedTypeNode>node).returnType.kind) {
                 case gt.SyntaxKind.StructrefKeyword:
-                case gt.SyntaxKind.ArrayrefKeyword:
-                {
-                    this.report(node, 'Can not use arrayref/structref as a global, a field, or a return value (only as a local or a parameter).');
+                case gt.SyntaxKind.ArrayrefKeyword: {
+                    this.report(
+                        node,
+                        "Can not use arrayref/structref as a global, a field, or a return value (only as a local or a parameter).",
+                    );
                     break;
                 }
             }
@@ -1265,7 +1555,9 @@ export class TypeChecker {
         this.checkSourceElement(node.thenStatement);
         if (node.elseStatement) {
             this.checkSourceElement(node.elseStatement);
-            node.hasReturn = (<gt.Block>node.thenStatement).hasReturn && (<gt.Block>node.elseStatement).hasReturn;
+            node.hasReturn =
+                (<gt.Block>node.thenStatement).hasReturn &&
+                (<gt.Block>node.elseStatement).hasReturn;
         }
     }
 
@@ -1302,19 +1594,25 @@ export class TypeChecker {
             return false;
         });
         if (!loop) {
-            this.report(node, `${tokenToString(node.syntaxTokens[0].kind)} statement used outside of loop boundaries`);
+            this.report(
+                node,
+                `${tokenToString(
+                    node.syntaxTokens[0].kind,
+                )} statement used outside of loop boundaries`,
+            );
         }
     }
 
     private checkReturnStatement(node: gt.ReturnStatement) {
-        const fn = <gt.FunctionDeclaration>findAncestorByKind(node, gt.SyntaxKind.FunctionDeclaration);
+        const fn = <gt.FunctionDeclaration>(
+            findAncestorByKind(node, gt.SyntaxKind.FunctionDeclaration)
+        );
         const rtype = this.getTypeFromTypeNode(fn.type);
 
         if (rtype.flags & gt.TypeFlags.Void && node.expression) {
-            this.report(node, 'Unexpected value returned for void function');
-        }
-        else if (!(rtype.flags & gt.TypeFlags.Void) && !node.expression) {
-            this.report(node, 'Expected a return value');
+            this.report(node, "Unexpected value returned for void function");
+        } else if (!(rtype.flags & gt.TypeFlags.Void) && !node.expression) {
+            this.report(node, "Expected a return value");
         }
 
         if (node.expression) {
@@ -1330,11 +1628,14 @@ export class TypeChecker {
 
     private checkMappedType(node: gt.MappedTypeNode) {
         if (!isReferenceKeywordKind(node.returnType.kind)) {
-            this.report(node.returnType, 'Invalid keyword for reference type provided - use funcref, arrayref or structref');
+            this.report(
+                node.returnType,
+                "Invalid keyword for reference type provided - use funcref, arrayref or structref",
+            );
         }
 
         if (node.typeArguments.length !== 1) {
-            this.report(node, 'Expected exactly 1 argument');
+            this.report(node, "Expected exactly 1 argument");
         }
         node.typeArguments.forEach(this.checkDeclarationType.bind(this));
 
@@ -1346,14 +1647,23 @@ export class TypeChecker {
                     invalid = !(type.declaredType.flags & gt.TypeFlags.Struct);
                     break;
                 case gt.SyntaxKind.FuncrefKeyword:
-                    invalid = !(type.declaredType.flags & gt.TypeFlags.Function);
+                    invalid = !(
+                        type.declaredType.flags & gt.TypeFlags.Function
+                    );
                     break;
                 case gt.SyntaxKind.ArrayrefKeyword:
                     invalid = !(type.declaredType.flags & gt.TypeFlags.Array);
                     break;
             }
             if (invalid) {
-                this.report(node, 'Type \'' + type.declaredType.getName() + '\' is not a valid reference for \'' + tokenToString(node.returnType.kind) + '\'');
+                this.report(
+                    node,
+                    "Type '" +
+                        type.declaredType.getName() +
+                        "' is not a valid reference for '" +
+                        tokenToString(node.returnType.kind) +
+                        "'",
+                );
             }
         }
     }
@@ -1382,11 +1692,17 @@ export class TypeChecker {
         this.checkExpression(node.expression);
     }
 
-    private checkExpression(node: gt.Expression, checkMode?: CheckMode): AbstractType {
+    private checkExpression(
+        node: gt.Expression,
+        checkMode?: CheckMode,
+    ): AbstractType {
         return this.checkExpressionWorker(<gt.Expression>node, checkMode);
     }
 
-    private checkExpressionWorker(node: gt.Expression, checkMode: CheckMode): AbstractType {
+    private checkExpressionWorker(
+        node: gt.Expression,
+        checkMode: CheckMode,
+    ): AbstractType {
         switch (node.kind) {
             case gt.SyntaxKind.Identifier:
                 return this.checkIdentifier(<gt.Identifier>node)[1];
@@ -1398,19 +1714,33 @@ export class TypeChecker {
             case gt.SyntaxKind.FalseKeyword:
                 return this.checkLiteralExpression(node);
             case gt.SyntaxKind.PropertyAccessExpression:
-                return this.checkPropertyAccessExpression(<gt.PropertyAccessExpression>node);
+                return this.checkPropertyAccessExpression(
+                    <gt.PropertyAccessExpression>node,
+                );
             case gt.SyntaxKind.ElementAccessExpression:
-                return this.checkIndexedAccess(<gt.ElementAccessExpression>node);
+                return this.checkIndexedAccess(
+                    <gt.ElementAccessExpression>node,
+                );
             case gt.SyntaxKind.CallExpression:
                 return this.checkCallExpression(<gt.CallExpression>node);
             case gt.SyntaxKind.ParenthesizedExpression:
-                return this.checkParenthesizedExpression(<gt.ParenthesizedExpression>node, checkMode);
+                return this.checkParenthesizedExpression(
+                    <gt.ParenthesizedExpression>node,
+                    checkMode,
+                );
             case gt.SyntaxKind.PrefixUnaryExpression:
-                return this.checkPrefixUnaryExpression(<gt.PrefixUnaryExpression>node);
+                return this.checkPrefixUnaryExpression(
+                    <gt.PrefixUnaryExpression>node,
+                );
             case gt.SyntaxKind.PostfixUnaryExpression:
-                return this.checkPostfixUnaryExpression(<gt.PostfixUnaryExpression>node);
+                return this.checkPostfixUnaryExpression(
+                    <gt.PostfixUnaryExpression>node,
+                );
             case gt.SyntaxKind.BinaryExpression:
-                return this.checkBinaryExpression(<gt.BinaryExpression>node, checkMode);
+                return this.checkBinaryExpression(
+                    <gt.BinaryExpression>node,
+                    checkMode,
+                );
         }
         return unknownType;
     }
@@ -1418,13 +1748,23 @@ export class TypeChecker {
     private checkLiteralExpression(node: gt.Expression): AbstractType {
         switch (node.kind) {
             case gt.SyntaxKind.StringLiteral:
-                return new LiteralType(gt.TypeFlags.StringLiteral | gt.TypeFlags.String | gt.TypeFlags.Nullable, node);
+                return new LiteralType(
+                    gt.TypeFlags.StringLiteral |
+                        gt.TypeFlags.String |
+                        gt.TypeFlags.Nullable,
+                    node,
+                );
             case gt.SyntaxKind.NumericLiteral:
-                if ((<gt.NumericLiteral>node).text.indexOf('.') !== -1) {
-                    return new LiteralType(gt.TypeFlags.NumericLiteral | gt.TypeFlags.Fixed, node);
-                }
-                else {
-                    return new LiteralType(gt.TypeFlags.NumericLiteral | gt.TypeFlags.Integer, node);
+                if ((<gt.NumericLiteral>node).text.indexOf(".") !== -1) {
+                    return new LiteralType(
+                        gt.TypeFlags.NumericLiteral | gt.TypeFlags.Fixed,
+                        node,
+                    );
+                } else {
+                    return new LiteralType(
+                        gt.TypeFlags.NumericLiteral | gt.TypeFlags.Integer,
+                        node,
+                    );
                 }
             case gt.SyntaxKind.TrueKeyword:
                 return trueType;
@@ -1433,30 +1773,38 @@ export class TypeChecker {
         }
     }
 
-    private checkBinaryExpression(node: gt.BinaryExpression, checkMode?: CheckMode) {
+    private checkBinaryExpression(
+        node: gt.BinaryExpression,
+        checkMode?: CheckMode,
+    ) {
         const leftType = this.checkExpression(node.left);
         const rightType = this.checkExpression(node.right);
 
         if (isAssignmentOperator(node.operatorToken.kind)) {
             this.checkTypeAssignableTo(rightType, leftType, node.right);
-        }
-        else if (isComparisonOperator(node.operatorToken.kind)) {
+        } else if (isComparisonOperator(node.operatorToken.kind)) {
             this.checkTypeComparableTo(rightType, leftType, node.right);
             return boolType;
-        }
-        else if (node.operatorToken.kind === gt.SyntaxKind.BarBarToken || node.operatorToken.kind === gt.SyntaxKind.AmpersandAmpersandToken) {
+        } else if (
+            node.operatorToken.kind === gt.SyntaxKind.BarBarToken ||
+            node.operatorToken.kind === gt.SyntaxKind.AmpersandAmpersandToken
+        ) {
             this.checkTypeAssignableTo(leftType, boolType, node.left);
             this.checkTypeAssignableTo(rightType, boolType, node.right);
             return boolType;
-        }
-        else {
-            const valid = leftType.isValidBinaryOperation(node.operatorToken.kind, rightType);
+        } else {
+            const valid = leftType.isValidBinaryOperation(
+                node.operatorToken.kind,
+                rightType,
+            );
             if (!valid) {
                 this.report(
                     node,
                     [
-                        `Binary expression '${tokenToString(node.operatorToken.kind)}' not supported between '${leftType.getName()}' and '${rightType.getName()}'.`,
-                    ].join(' ')
+                        `Binary expression '${tokenToString(
+                            node.operatorToken.kind,
+                        )}' not supported between '${leftType.getName()}' and '${rightType.getName()}'.`,
+                    ].join(" "),
                 );
             }
 
@@ -1465,18 +1813,22 @@ export class TypeChecker {
                 case gt.SyntaxKind.MinusToken:
                 case gt.SyntaxKind.AsteriskToken:
                 case gt.SyntaxKind.PercentToken:
-                case gt.SyntaxKind.SlashToken:
-                {
+                case gt.SyntaxKind.SlashToken: {
                     if (leftType.flags & gt.TypeFlags.Numeric) {
                         // implicit cast to fixed
-                        if ((rightType.flags & gt.TypeFlags.Fixed) && !(leftType.flags & gt.TypeFlags.Fixed)) {
+                        if (
+                            rightType.flags & gt.TypeFlags.Fixed &&
+                            !(leftType.flags & gt.TypeFlags.Fixed)
+                        ) {
                             return fixedType;
                         }
 
                         // implicit cast to int
                         if (
-                            ((leftType.flags & gt.TypeFlags.Byte) && !(rightType.flags & gt.TypeFlags.Byte)) ||
-                            ((rightType.flags & gt.TypeFlags.Byte) && !(leftType.flags & gt.TypeFlags.Byte))
+                            (leftType.flags & gt.TypeFlags.Byte &&
+                                !(rightType.flags & gt.TypeFlags.Byte)) ||
+                            (rightType.flags & gt.TypeFlags.Byte &&
+                                !(leftType.flags & gt.TypeFlags.Byte))
                         ) {
                             return integerType;
                         }
@@ -1498,19 +1850,33 @@ export class TypeChecker {
         return leftType;
     }
 
-    private checkParenthesizedExpression(node: gt.ParenthesizedExpression, checkMode?: CheckMode) {
+    private checkParenthesizedExpression(
+        node: gt.ParenthesizedExpression,
+        checkMode?: CheckMode,
+    ) {
         return this.checkExpression(node.expression);
     }
 
-    private checkPrefixUnaryExpression(node: gt.PrefixUnaryExpression, checkMode?: CheckMode) {
+    private checkPrefixUnaryExpression(
+        node: gt.PrefixUnaryExpression,
+        checkMode?: CheckMode,
+    ) {
         const type = this.checkExpression(node.operand);
         if (!type.isValidPrefixOperation(node.operator.kind)) {
-            this.report(node, `Prefix '${tokenToString(node.operator.kind)}' operation not supported for '${type.getName()}' type`);
+            this.report(
+                node,
+                `Prefix '${tokenToString(
+                    node.operator.kind,
+                )}' operation not supported for '${type.getName()}' type`,
+            );
         }
         return type;
     }
 
-    private checkPostfixUnaryExpression(node: gt.PostfixUnaryExpression, checkMode?: CheckMode) {
+    private checkPostfixUnaryExpression(
+        node: gt.PostfixUnaryExpression,
+        checkMode?: CheckMode,
+    ) {
         return this.checkExpression(node.operand);
     }
 
@@ -1518,8 +1884,7 @@ export class TypeChecker {
         switch (node.parent.kind) {
             case gt.SyntaxKind.PropertyDeclaration:
             case gt.SyntaxKind.ParameterDeclaration:
-            case gt.SyntaxKind.VariableDeclaration:
-            {
+            case gt.SyntaxKind.VariableDeclaration: {
                 const namedDecl = node.parent as gt.PropertyDeclaration;
                 if (namedDecl.type === node) return true;
             }
@@ -1527,8 +1892,13 @@ export class TypeChecker {
         return false;
     }
 
-    private checkIdentifier(node: gt.Identifier, checkSymbol = false, definitionReferenced = true): [gt.Symbol, AbstractType] {
-        const symbol = this.getSymbolOfEntityNameOrPropertyAccessExpression(node);
+    private checkIdentifier(
+        node: gt.Identifier,
+        checkSymbol = false,
+        definitionReferenced = true,
+    ): [gt.Symbol, AbstractType] {
+        const symbol =
+            this.getSymbolOfEntityNameOrPropertyAccessExpression(node);
         if (!symbol) {
             this.report(node, `Undeclared symbol: '${node.name}'`);
             return [symbol, unknownType];
@@ -1543,10 +1913,15 @@ export class TypeChecker {
             symRef.add(node);
         }
 
-        if ((symbol.flags & gt.SymbolFlags.Static)) {
-            const sourceFile = <gt.SourceFile>findAncestorByKind(node, gt.SyntaxKind.SourceFile);
+        if (symbol.flags & gt.SymbolFlags.Static) {
+            const sourceFile = <gt.SourceFile>(
+                findAncestorByKind(node, gt.SyntaxKind.SourceFile)
+            );
             if (symbol.parent && symbol.parent.declarations[0] !== sourceFile) {
-                this.report(node, 'Attempting to reference symbol with static modifier outside the scope of its definition.');
+                this.report(
+                    node,
+                    "Attempting to reference symbol with static modifier outside the scope of its definition.",
+                );
             }
         }
         return [symbol, this.getTypeOfSymbol(symbol)];
@@ -1564,12 +1939,17 @@ export class TypeChecker {
             if (fnType.flags & gt.TypeFlags.Function) {
                 func = <gt.FunctionDeclaration>fnType.symbol.declarations[0];
                 if (node.arguments.length !== func.parameters.length) {
-                    this.report(node, `Expected ${func.parameters.length} arguments, got ${node.arguments.length}`);
+                    this.report(
+                        node,
+                        `Expected ${func.parameters.length} arguments, got ${node.arguments.length}`,
+                    );
                 }
                 returnType = this.getTypeFromTypeNode(func.type);
-            }
-            else {
-                this.report(node, `Type '${fnType.getName()}' is not calllable`);
+            } else {
+                this.report(
+                    node,
+                    `Type '${fnType.getName()}' is not calllable`,
+                );
                 returnType = unknownType;
             }
         }
@@ -1577,7 +1957,9 @@ export class TypeChecker {
             for (const [key, arg] of node.arguments.entries()) {
                 const exprType = this.checkExpression(arg);
                 if (func.parameters.length > key) {
-                    const expectedType = this.getTypeFromTypeNode(func.parameters[key].type);
+                    const expectedType = this.getTypeFromTypeNode(
+                        func.parameters[key].type,
+                    );
                     this.checkTypeAssignableTo(exprType, expectedType, arg);
                 }
             }
@@ -1589,8 +1971,14 @@ export class TypeChecker {
         let objectType = this.checkExpression(node.expression);
         const indexType = this.checkExpression(node.argumentExpression);
 
-        if (!(indexType.flags & gt.TypeFlags.Integer) && !(indexType.flags & gt.TypeFlags.NumericLiteral)) {
-            this.report(node.argumentExpression, 'Array index require an integer value');
+        if (
+            !(indexType.flags & gt.TypeFlags.Integer) &&
+            !(indexType.flags & gt.TypeFlags.NumericLiteral)
+        ) {
+            this.report(
+                node.argumentExpression,
+                "Array index require an integer value",
+            );
         }
 
         if (objectType.flags & gt.TypeFlags.Reference) {
@@ -1599,53 +1987,68 @@ export class TypeChecker {
 
         if (objectType.flags & gt.TypeFlags.Array) {
             return (<ArrayType>objectType).elementType;
-        }
-        else {
-            this.report(node, 'Index access on non-array type');
+        } else {
+            this.report(node, "Index access on non-array type");
         }
 
         return unknownType;
     }
 
-    private checkPropertyAccessExpression(node: gt.PropertyAccessExpression): AbstractType {
+    private checkPropertyAccessExpression(
+        node: gt.PropertyAccessExpression,
+    ): AbstractType {
         let type = this.checkExpression(node.expression);
 
         type = this.resolveMappedReference(type);
         if (!(type.flags & gt.TypeFlags.Struct)) {
-            this.report(node.name, 'Cannot access property on \'' + type.getName() + '\' type');
-        }
-        else {
+            this.report(
+                node.name,
+                "Cannot access property on '" + type.getName() + "' type",
+            );
+        } else {
             const prop = this.getPropertyOfType(type, node.name.name);
             if (prop) {
                 this.getNodeLinks(node).resolvedSymbol = prop;
                 const propType = this.getTypeOfSymbol(prop);
                 return propType;
-            }
-            else {
-                this.report(node.name, 'Undeclared property');
+            } else {
+                this.report(node.name, "Undeclared property");
             }
         }
 
         return unknownType;
     }
 
-    private resolveName(location: gt.Node | undefined, name: string, limitScopeToDocument: boolean = false): gt.Symbol | undefined {
+    private resolveName(
+        location: gt.Node | undefined,
+        name: string,
+        limitScopeToDocument: boolean = false,
+    ): gt.Symbol | undefined {
         if (location) {
-            const currentContext = <gt.NamedDeclaration>findAncestor(location, (element: gt.Node): boolean => {
-                return element.kind === gt.SyntaxKind.FunctionDeclaration || element.kind === gt.SyntaxKind.StructDeclaration;
-            });
+            const currentContext = <gt.NamedDeclaration>(
+                findAncestor(location, (element: gt.Node): boolean => {
+                    return (
+                        element.kind === gt.SyntaxKind.FunctionDeclaration ||
+                        element.kind === gt.SyntaxKind.StructDeclaration
+                    );
+                })
+            );
             if (currentContext && currentContext.symbol.members.has(name)) {
                 return currentContext.symbol.members.get(name);
             }
 
-            const sourceFile = <gt.SourceFile>findAncestorByKind(location, gt.SyntaxKind.SourceFile);
+            const sourceFile = <gt.SourceFile>(
+                findAncestorByKind(location, gt.SyntaxKind.SourceFile)
+            );
             if (sourceFile.symbol.members.has(name)) {
                 return sourceFile.symbol.members.get(name);
             }
         }
 
         if (limitScopeToDocument && !location) {
-            throw new Error('Expected location when limitScopeToDocument is set to true');
+            throw new Error(
+                "Expected location when limitScopeToDocument is set to true",
+            );
         }
         if (limitScopeToDocument) return;
 
@@ -1663,33 +2066,42 @@ export class TypeChecker {
         return undefined;
     }
 
-    private resolveEntityName(entityName: gt.EntityNameExpression, meaning: gt.SymbolFlags, ignoreErrors?: boolean): gt.Symbol | undefined {
+    private resolveEntityName(
+        entityName: gt.EntityNameExpression,
+        meaning: gt.SymbolFlags,
+        ignoreErrors?: boolean,
+    ): gt.Symbol | undefined {
         let symbol: gt.Symbol;
         if (entityName.kind === gt.SyntaxKind.Identifier) {
             if (!this.isTypeIdentifier(entityName)) {
                 symbol = this.resolveName(entityName, entityName.name);
-            }
-            else {
-                symbol = this.resolveName(findAncestorByKind(entityName, gt.SyntaxKind.SourceFile), entityName.name);
+            } else {
+                symbol = this.resolveName(
+                    findAncestorByKind(entityName, gt.SyntaxKind.SourceFile),
+                    entityName.name,
+                );
             }
         }
         return symbol;
     }
 
-    private getSymbolOfEntityNameOrPropertyAccessExpression(entityName: gt.Identifier | gt.PropertyAccessExpression): gt.Symbol | undefined {
+    private getSymbolOfEntityNameOrPropertyAccessExpression(
+        entityName: gt.Identifier | gt.PropertyAccessExpression,
+    ): gt.Symbol | undefined {
         if (isRightSideOfPropertyAccess(entityName)) {
             entityName = <gt.PropertyAccessExpression>entityName.parent;
         }
 
         if (entityName.kind === gt.SyntaxKind.Identifier) {
             return this.resolveEntityName(entityName, null, false);
-        }
-        else if (entityName.kind === gt.SyntaxKind.PropertyAccessExpression) {
+        } else if (entityName.kind === gt.SyntaxKind.PropertyAccessExpression) {
             const links = this.getNodeLinks(entityName);
             if (links.resolvedSymbol) {
                 return links.resolvedSymbol;
             }
-            this.checkPropertyAccessExpression(<gt.PropertyAccessExpression>entityName).symbol;
+            this.checkPropertyAccessExpression(
+                <gt.PropertyAccessExpression>entityName,
+            ).symbol;
             return links.resolvedSymbol;
         }
     }
@@ -1698,7 +2110,9 @@ export class TypeChecker {
         switch (node.kind) {
             case gt.SyntaxKind.Identifier:
             case gt.SyntaxKind.PropertyAccessExpression:
-                return this.getSymbolOfEntityNameOrPropertyAccessExpression(<gt.Identifier | gt.PropertyAccessExpression>node);
+                return this.getSymbolOfEntityNameOrPropertyAccessExpression(
+                    <gt.Identifier | gt.PropertyAccessExpression>node,
+                );
         }
     }
 }

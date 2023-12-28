@@ -1,14 +1,17 @@
-import { AbstractProvider } from './provider';
-import * as gt from '../compiler/types';
-import * as lsp from 'vscode-languageserver';
-import { forEachChild } from '../compiler/utils';
-import { getPositionOfLineAndCharacter, getAdjacentIdentfier, getLineAndCharacterOfPosition } from './utils';
-import { TypeChecker } from '../compiler/checker';
-import URI from 'vscode-uri';
+import { AbstractProvider } from "./provider";
+import * as gt from "../compiler/types";
+import * as lsp from "vscode-languageserver";
+import { forEachChild } from "../compiler/utils";
+import {
+    getPositionOfLineAndCharacter,
+    getAdjacentIdentfier,
+    getLineAndCharacterOfPosition,
+} from "./utils";
+import { TypeChecker } from "../compiler/checker";
 
 export interface ReferencesConfig {
     currentWorkspaceOnly: boolean;
-};
+}
 
 export class ReferencesProvider extends AbstractProvider {
     private locations: lsp.Location[] = [];
@@ -25,13 +28,16 @@ export class ReferencesProvider extends AbstractProvider {
     }
 
     private collectReferences(sourceFile: gt.SourceFile, child: gt.Node) {
-        if (child.kind === gt.SyntaxKind.Identifier && this.checker.getSymbolAtLocation(child) === this.searchSymbol) {
+        if (
+            child.kind === gt.SyntaxKind.Identifier &&
+            this.checker.getSymbolAtLocation(child) === this.searchSymbol
+        ) {
             this.locations.push(<lsp.Location>{
                 uri: sourceFile.fileName,
                 range: {
                     start: getLineAndCharacterOfPosition(sourceFile, child.pos),
                     end: getLineAndCharacterOfPosition(sourceFile, child.end),
-                }
+                },
             });
         }
         forEachChild(child, (node: gt.Node) => {
@@ -39,12 +45,19 @@ export class ReferencesProvider extends AbstractProvider {
         });
     }
 
-    public onReferences(params: lsp.ReferenceParams, currentWorkspaceOnly?: boolean): lsp.Location[] {
+    public onReferences(
+        params: lsp.ReferenceParams,
+        currentWorkspaceOnly?: boolean,
+    ): lsp.Location[] {
         this.locations = [];
 
         const sourceFile = this.store.documents.get(params.textDocument.uri);
         if (!sourceFile) return;
-        const position = getPositionOfLineAndCharacter(sourceFile, params.position.line, params.position.character);
+        const position = getPositionOfLineAndCharacter(
+            sourceFile,
+            params.position.line,
+            params.position.character,
+        );
         const currentToken = getAdjacentIdentfier(position, sourceFile);
 
         if (!currentToken) {
@@ -60,7 +73,8 @@ export class ReferencesProvider extends AbstractProvider {
 
         for (const sourceFile of this.store.documents.values()) {
             if (
-                (this.config.currentWorkspaceOnly || currentWorkspaceOnly === true) &&
+                (this.config.currentWorkspaceOnly ||
+                    currentWorkspaceOnly === true) &&
                 !this.store.isUriInWorkspace(sourceFile.fileName) &&
                 !this.store.openDocuments.has(sourceFile.fileName)
             ) {

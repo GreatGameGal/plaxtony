@@ -1,11 +1,14 @@
-import * as gt from '../compiler/types';
-import { TypeChecker } from '../compiler/checker';
-import { AbstractProvider } from './provider';
-import { getSourceFileOfNode, isNamedDeclarationKind } from '../compiler/utils';
-import { getAdjacentIdentfier, getLineAndCharacterOfPosition, getPositionOfLineAndCharacter } from './utils';
-import { Printer } from '../compiler/printer';
-import { getDocumentationOfSymbol } from './s2meta';
-import * as lsp from 'vscode-languageserver';
+import * as gt from "../compiler/types";
+import { TypeChecker } from "../compiler/checker";
+import { AbstractProvider } from "./provider";
+import {
+    getAdjacentIdentfier,
+    getLineAndCharacterOfPosition,
+    getPositionOfLineAndCharacter,
+} from "./utils";
+import { Printer } from "../compiler/printer";
+import { getDocumentationOfSymbol } from "./s2meta";
+import * as lsp from "vscode-languageserver";
 
 export class HoverProvider extends AbstractProvider {
     private printer = new Printer();
@@ -13,10 +16,17 @@ export class HoverProvider extends AbstractProvider {
     public getHoverAt(params: lsp.TextDocumentPositionParams): lsp.Hover {
         const sourceFile = this.store.documents.get(params.textDocument.uri);
         if (!sourceFile) return;
-        const position = getPositionOfLineAndCharacter(sourceFile, params.position.line, params.position.character);
+        const position = getPositionOfLineAndCharacter(
+            sourceFile,
+            params.position.line,
+            params.position.character,
+        );
         const currentToken = getAdjacentIdentfier(position, sourceFile);
 
-        if (!currentToken || (<gt.Node>currentToken).kind !== gt.SyntaxKind.Identifier) {
+        if (
+            !currentToken ||
+            (<gt.Node>currentToken).kind !== gt.SyntaxKind.Identifier
+        ) {
             return null;
         }
 
@@ -31,15 +41,15 @@ export class HoverProvider extends AbstractProvider {
 
         let decl = symbol.declarations[0];
         if (decl.kind === gt.SyntaxKind.FunctionDeclaration) {
-            decl = Object.assign({}, decl, {body: null});
+            decl = Object.assign({}, decl, { body: null });
         }
 
         let code = this.printer.printNode(decl).trim();
         // strip ;
-        if (code.substr(code.length - 1, 1) === ';') {
+        if (code.substr(code.length - 1, 1) === ";") {
             code = code.substr(0, code.length - 1);
         }
-        content.push('```galaxy\n' + code + '\n```');
+        content.push("```galaxy\n" + code + "\n```");
 
         // if (symbol.flags & gt.SymbolFlags.FunctionParameter) {
         //     content.push('parameter of `' + symbol.parent.escapedName + '`');
@@ -55,7 +65,7 @@ export class HoverProvider extends AbstractProvider {
         //     content.push('' + scope + ' ' + (isConstant ? 'constant' : 'variable') + '');
         // }
         if (symbol.flags & gt.SymbolFlags.Property) {
-            content.push('property of `' + symbol.parent.escapedName + '`');
+            content.push("property of `" + symbol.parent.escapedName + "`");
         }
 
         const docs = getDocumentationOfSymbol(this.store, symbol);
@@ -66,9 +76,15 @@ export class HoverProvider extends AbstractProvider {
         return <lsp.Hover>{
             contents: content,
             range: {
-                start: getLineAndCharacterOfPosition(sourceFile, currentToken.pos),
-                end: getLineAndCharacterOfPosition(sourceFile, currentToken.end),
-            }
+                start: getLineAndCharacterOfPosition(
+                    sourceFile,
+                    currentToken.pos,
+                ),
+                end: getLineAndCharacterOfPosition(
+                    sourceFile,
+                    currentToken.end,
+                ),
+            },
         };
     }
 }

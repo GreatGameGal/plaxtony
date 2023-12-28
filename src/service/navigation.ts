@@ -1,7 +1,12 @@
-import { SourceFile, NamedDeclaration, Node, SyntaxKind } from '../compiler/types';
-import { forEachChild } from '../compiler/utils';
-import { fuzzysearch } from './utils';
-import { AbstractProvider } from './provider';
+import {
+    SourceFile,
+    NamedDeclaration,
+    Node,
+    SyntaxKind,
+} from "../compiler/types";
+import { forEachChild } from "../compiler/utils";
+import { fuzzysearch } from "./utils";
+import { AbstractProvider } from "./provider";
 
 function collectDeclarations(sourceFile: SourceFile): NamedDeclaration[] {
     let declarations: NamedDeclaration[] = [];
@@ -20,7 +25,7 @@ function collectDeclarations(sourceFile: SourceFile): NamedDeclaration[] {
         }
 
         if (node.kind === SyntaxKind.SourceFile) {
-            forEachChild(node, child => visitNode(child));
+            forEachChild(node, (child) => visitNode(child));
         }
     }
 

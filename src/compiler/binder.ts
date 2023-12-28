@@ -1,14 +1,17 @@
-import { Parser } from './parser';
-import * as gt from './types';
-import { SyntaxKind, SourceFile, Node, Symbol, SymbolTable, NamedDeclaration } from './types';
-import { forEachChild, isNamedDeclarationKind, isDeclarationKind, isContainerKind, getSourceFileOfNode } from './utils';
-import { IStoreSymbols } from '../service/store';
+import * as gt from "./types";
+import { SyntaxKind, SourceFile, Node, Symbol } from "./types";
+import {
+    forEachChild,
+    isDeclarationKind,
+    isContainerKind,
+    getSourceFileOfNode,
+} from "./utils";
+import { IStoreSymbols } from "../service/store";
 // import { SignatureMeta, TypeChecker } from './checker';
 
 export function getDeclarationName(node: Node): string {
     switch (node.kind) {
-        case SyntaxKind.SourceFile:
-        {
+        case SyntaxKind.SourceFile: {
             return (<gt.SourceFile>node).fileName;
             break;
         }
@@ -18,27 +21,23 @@ export function getDeclarationName(node: Node): string {
         case SyntaxKind.StructDeclaration:
         case SyntaxKind.ParameterDeclaration:
         case SyntaxKind.PropertyDeclaration:
-        case SyntaxKind.TypedefDeclaration:
-        {
+        case SyntaxKind.TypedefDeclaration: {
             return (<gt.NamedDeclaration>node).name.name;
             break;
         }
 
-        case SyntaxKind.PropertyAccessExpression:
-        {
-            return '__prop__' + (<gt.PropertyAccessExpression>node).name.name;
+        case SyntaxKind.PropertyAccessExpression: {
+            return "__prop__" + (<gt.PropertyAccessExpression>node).name.name;
             break;
         }
 
-        case SyntaxKind.CallExpression:
-        {
+        case SyntaxKind.CallExpression: {
             const call = <gt.CallExpression>node;
             if (call.expression.kind === gt.SyntaxKind.Identifier) {
                 return (<gt.Identifier>call.expression).name;
-            }
-            else {
+            } else {
                 // TODO: properly named call expressions such as: st.member_fns[12]();
-                return '__()';
+                return "__()";
             }
             break;
         }
@@ -47,8 +46,10 @@ export function getDeclarationName(node: Node): string {
 
 function isDeclNodeDefined(node: gt.Declaration) {
     if (
-        (node.kind === gt.SyntaxKind.FunctionDeclaration && (<gt.FunctionDeclaration>node).body) ||
-        (node.kind === gt.SyntaxKind.VariableDeclaration && (<gt.VariableDeclaration>node).initializer)
+        (node.kind === gt.SyntaxKind.FunctionDeclaration &&
+            (<gt.FunctionDeclaration>node).body) ||
+        (node.kind === gt.SyntaxKind.VariableDeclaration &&
+            (<gt.VariableDeclaration>node).initializer)
     ) {
         return true;
     }
@@ -65,26 +66,35 @@ function isDeclNodeDefined(node: gt.Declaration) {
 //     return result;
 // }
 
-export function declareSymbol(node: gt.Declaration, store: IStoreSymbols, parentSymbol?: Symbol): Symbol {
+export function declareSymbol(
+    node: gt.Declaration,
+    store: IStoreSymbols,
+    parentSymbol?: Symbol,
+): Symbol {
     let scopedSymbolTable: Symbol;
     let nodeSymbol: Symbol;
     let name: string;
 
     name = getDeclarationName(node);
     if (!name) {
-        name = '__anonymous';
+        name = "__anonymous";
     }
 
     if (parentSymbol && parentSymbol.members.has(name)) {
         nodeSymbol = parentSymbol.members.get(name);
-    }
-    else {
+    } else {
         let isStatic = false;
         if (node.modifiers) {
-            isStatic = node.modifiers.some((value) => value.kind === gt.SyntaxKind.StaticKeyword);
+            isStatic = node.modifiers.some(
+                (value) => value.kind === gt.SyntaxKind.StaticKeyword,
+            );
         }
 
-        if (parentSymbol && !isStatic && parentSymbol.declarations[0].kind === gt.SyntaxKind.SourceFile) {
+        if (
+            parentSymbol &&
+            !isStatic &&
+            parentSymbol.declarations[0].kind === gt.SyntaxKind.SourceFile
+        ) {
             nodeSymbol = store.resolveGlobalSymbol(name);
         }
 
@@ -104,12 +114,12 @@ export function declareSymbol(node: gt.Declaration, store: IStoreSymbols, parent
                     nodeSymbol.flags = gt.SymbolFlags.FunctionParameter;
                     break;
                 case gt.SyntaxKind.VariableDeclaration:
-                    nodeSymbol.flags = (
-                        (
-                            parentSymbol &&
-                            parentSymbol.declarations[0].kind === gt.SyntaxKind.SourceFile
-                        ) ? gt.SymbolFlags.GlobalVariable : gt.SymbolFlags.LocalVariable
-                    );
+                    nodeSymbol.flags =
+                        parentSymbol &&
+                        parentSymbol.declarations[0].kind ===
+                            gt.SyntaxKind.SourceFile
+                            ? gt.SymbolFlags.GlobalVariable
+                            : gt.SymbolFlags.LocalVariable;
                     break;
                 case gt.SyntaxKind.FunctionDeclaration:
                     nodeSymbol.flags = gt.SymbolFlags.Function;
@@ -127,12 +137,16 @@ export function declareSymbol(node: gt.Declaration, store: IStoreSymbols, parent
 
             switch (node.kind) {
                 case gt.SyntaxKind.VariableDeclaration:
-                case gt.SyntaxKind.FunctionDeclaration:
-                {
+                case gt.SyntaxKind.FunctionDeclaration: {
                     if (isStatic) {
                         nodeSymbol.flags |= gt.SymbolFlags.Static;
                     }
-                    if (node.modifiers.some((value) => value.kind === gt.SyntaxKind.NativeKeyword)) {
+                    if (
+                        node.modifiers.some(
+                            (value) =>
+                                value.kind === gt.SyntaxKind.NativeKeyword,
+                        )
+                    ) {
                         nodeSymbol.flags |= gt.SymbolFlags.Native;
                     }
                     break;
@@ -167,14 +181,16 @@ export function bindSourceFile(sourceFile: SourceFile, store: IStoreSymbols) {
 
         if (isDeclarationKind(node.kind)) {
             switch (node.kind) {
-                case SyntaxKind.SourceFile:
-                {
+                case SyntaxKind.SourceFile: {
                     declareSymbol(<gt.Declaration>node, store, null);
                     break;
                 }
-                default:
-                {
-                    declareSymbol(<gt.Declaration>node, store, currentContainer.symbol);
+                default: {
+                    declareSymbol(
+                        <gt.Declaration>node,
+                        store,
+                        currentContainer.symbol,
+                    );
                     break;
                 }
             }
@@ -187,7 +203,7 @@ export function bindSourceFile(sourceFile: SourceFile, store: IStoreSymbols) {
         if (isDeclarationKind(node.kind)) {
             currentScope = <gt.Declaration>node;
         }
-        forEachChild(node, child => bind(child));
+        forEachChild(node, (child) => bind(child));
 
         currentScope = parentScope;
         currentContainer = parentContainer;
@@ -202,7 +218,9 @@ export function unbindSourceFile(sourceFile: SourceFile, store: IStoreSymbols) {
             });
 
             if (
-                !symbol.declarations.find(x => x === symbol.valueDeclaration) &&
+                !symbol.declarations.find(
+                    (x) => x === symbol.valueDeclaration,
+                ) &&
                 getSourceFileOfNode(symbol.valueDeclaration) === sourceFile
             ) {
                 delete symbol.valueDeclaration;
@@ -218,8 +236,7 @@ export function unbindSourceFile(sourceFile: SourceFile, store: IStoreSymbols) {
                         break;
                     }
                 }
-            }
-            else {
+            } else {
                 parentSymbol.members.delete(symbol.escapedName);
             }
         }

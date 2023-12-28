@@ -1,17 +1,26 @@
-import * as gt from '../compiler/types';
-import * as lsp from 'vscode-languageserver';
-import { SyntaxKind, Symbol, Node, SourceFile, CallExpression, Identifier, FunctionDeclaration, Expression } from '../compiler/types';
-import { findAncestor, getSourceFileOfNode } from '../compiler/utils';
-import { Printer } from '../compiler/printer';
-import { TypeChecker } from '../compiler/checker';
-import { AbstractProvider } from './provider';
-import { getTokenAtPosition } from './utils';
-import { getDocumentationOfSymbol } from './s2meta';
+import * as gt from "../compiler/types";
+import * as lsp from "vscode-languageserver";
+import {
+    SyntaxKind,
+    Node,
+    CallExpression,
+    FunctionDeclaration,
+    Expression,
+} from "../compiler/types";
+import { findAncestor } from "../compiler/utils";
+import { Printer } from "../compiler/printer";
+import { TypeChecker } from "../compiler/checker";
+import { AbstractProvider } from "./provider";
+import { getTokenAtPosition } from "./utils";
+import { getDocumentationOfSymbol } from "./s2meta";
 
 export class SignaturesProvider extends AbstractProvider {
     private printer: Printer = new Printer();
 
-    private evaluateActiveParameter(callExpr: CallExpression, position: number): number | null {
+    private evaluateActiveParameter(
+        callExpr: CallExpression,
+        position: number,
+    ): number | null {
         let activeParam: number | null = null;
         let prevArg: gt.Node;
 
@@ -43,12 +52,18 @@ export class SignaturesProvider extends AbstractProvider {
         return activeParam;
     }
 
-    public getSignatureOfFunction(functionSymbol: gt.Symbol): lsp.SignatureInformation {
-        const functionDeclaration = <FunctionDeclaration>functionSymbol.declarations[0];
+    public getSignatureOfFunction(
+        functionSymbol: gt.Symbol,
+    ): lsp.SignatureInformation {
+        const functionDeclaration = <FunctionDeclaration>(
+            functionSymbol.declarations[0]
+        );
 
-        let code = this.printer.printNode(Object.assign({}, functionDeclaration, {body: null})).trim();
+        let code = this.printer
+            .printNode(Object.assign({}, functionDeclaration, { body: null }))
+            .trim();
         // strip ;
-        if (code.substr(code.length - 1, 1) === ';') {
+        if (code.substr(code.length - 1, 1) === ";") {
             code = code.substr(0, code.length - 1);
         }
 
@@ -57,7 +72,11 @@ export class SignaturesProvider extends AbstractProvider {
             parameters: [],
         };
 
-        const docStr = getDocumentationOfSymbol(this.store, functionSymbol, false);
+        const docStr = getDocumentationOfSymbol(
+            this.store,
+            functionSymbol,
+            false,
+        );
         if (docStr) {
             signatureInfo.documentation = {
                 kind: lsp.MarkupKind.Markdown,
@@ -65,9 +84,16 @@ export class SignaturesProvider extends AbstractProvider {
             };
         }
 
-        const argsDoc = this.store.s2metadata ? this.store.s2metadata.getFunctionArgumentsDoc(functionSymbol.escapedName) : null;
+        const argsDoc = this.store.s2metadata
+            ? this.store.s2metadata.getFunctionArgumentsDoc(
+                  functionSymbol.escapedName,
+              )
+            : null;
 
-        for (const [index, paramDeclaration] of functionDeclaration.parameters.entries()) {
+        for (const [
+            index,
+            paramDeclaration,
+        ] of functionDeclaration.parameters.entries()) {
             const paramInfo = <lsp.ParameterInformation>{
                 label: this.printer.printNode(paramDeclaration),
             };
@@ -98,20 +124,22 @@ export class SignaturesProvider extends AbstractProvider {
         }
         let node: Node = currentToken.parent;
 
-        const callNode = <CallExpression>findAncestor(node, (element: Node): boolean => {
-            if (element.kind !== SyntaxKind.CallExpression) {
-                return false;
-            }
-            // we don't want to provide signature for left side of CallExpression
-            if ((<CallExpression>element).arguments.pos > position) {
-                return false;
-            }
-            // skip if goes over range - we must've hit CloseParenToken
-            if (element.end <= position) {
-                return false;
-            }
-            return true;
-        });
+        const callNode = <CallExpression>(
+            findAncestor(node, (element: Node): boolean => {
+                if (element.kind !== SyntaxKind.CallExpression) {
+                    return false;
+                }
+                // we don't want to provide signature for left side of CallExpression
+                if ((<CallExpression>element).arguments.pos > position) {
+                    return false;
+                }
+                // skip if goes over range - we must've hit CloseParenToken
+                if (element.end <= position) {
+                    return false;
+                }
+                return true;
+            })
+        );
 
         if (!callNode) {
             return null;
@@ -121,10 +149,15 @@ export class SignaturesProvider extends AbstractProvider {
         const type = checker.getTypeOfNode(callNode.expression, true);
 
         if (type.flags & gt.TypeFlags.Function) {
-            const signatureInfo = this.getSignatureOfFunction((<gt.FunctionType>type).symbol);
+            const signatureInfo = this.getSignatureOfFunction(
+                (<gt.FunctionType>type).symbol,
+            );
 
             signatureHelp.activeSignature = 0;
-            signatureHelp.activeParameter = this.evaluateActiveParameter(callNode, position);
+            signatureHelp.activeParameter = this.evaluateActiveParameter(
+                callNode,
+                position,
+            );
             signatureHelp.signatures.push(signatureInfo);
         }
 

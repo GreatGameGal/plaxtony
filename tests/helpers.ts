@@ -1,12 +1,17 @@
-import { SourceFile, Diagnostic } from './../src/compiler/types';
-import { Parser } from '../src/compiler/parser';
-import { TextDocument } from 'vscode-languageserver-textdocument';
-import { Store, S2WorkspaceWatcher, createTextDocumentFromFs, openSourceFilesInLocation } from '../src/service/store';
-import { SC2Workspace } from '../src/sc2mod/archive';
-import * as path from 'path';
-import * as util from 'util';
+import { SourceFile, Diagnostic } from "./../src/compiler/types";
+import { Parser } from "../src/compiler/parser";
+import { TextDocument } from "vscode-languageserver-textdocument";
+import {
+    Store,
+    S2WorkspaceWatcher,
+    createTextDocumentFromFs,
+    openSourceFilesInLocation,
+} from "../src/service/store";
+import { SC2Workspace } from "../src/sc2mod/archive";
+import * as path from "path";
+import * as util from "util";
 
-const fixturesPath = 'tests/fixtures';
+const fixturesPath = "tests/fixtures";
 
 export function fixtureFilePath(...filepath: string[]) {
     return path.join(fixturesPath, ...filepath);
@@ -20,10 +25,15 @@ export function mockupSourceFile(...filepath: string[]): SourceFile {
     const parser = new Parser();
     const completeFilePath = fixtureFilePath(...filepath);
     const document = createTextDocumentFromFs(completeFilePath);
-    return parser.parseFile(path.basename(completeFilePath), document.getText());
+    return parser.parseFile(
+        path.basename(completeFilePath),
+        document.getText(),
+    );
 }
 
-export function mockupStoreDocument(...filepath: string[]): [Store, SourceFile] {
+export function mockupStoreDocument(
+    ...filepath: string[]
+): [Store, SourceFile] {
     const store = new Store();
     const document = createTextDocumentFromFs(fixtureFilePath(...filepath));
     store.updateDocument(document);
@@ -47,7 +57,10 @@ export async function mockupStoreFromDirectory(directory: string) {
     return store;
 }
 
-export async function mockupStoreFromS2Workspace(directory: string, modSources: string[]) {
+export async function mockupStoreFromS2Workspace(
+    directory: string,
+    modSources: string[],
+) {
     const store = new Store();
     const ws = new S2WorkspaceWatcher(directory, modSources);
     const workspaces: SC2Workspace[] = [];
@@ -80,7 +93,7 @@ function printDiagnostics(diagnostics: Diagnostic[]): string {
 
         r.push(diag.toString());
     }
-    return r.join('\n');
+    return r.join("\n");
 }
 
 export function dump(d: any) {

@@ -1,23 +1,23 @@
-import * as fs from 'fs';
-import { Element } from './trigger';
+import * as fs from "fs";
+import { Element } from "./trigger";
 
 // const fileRe = /^((\w+)\/(\w+)\/(\w+))=(.+)$/gmu;
 const fileRe = /^\s*([^=]+)=(.+)$/gmu;
 
-export class LocalizationFile extends Map<string,string> {
+export class LocalizationFile extends Map<string, string> {
     readFromFile(filename: string): boolean {
-        const text = fs.readFileSync(filename, 'utf8');
+        const text = fs.readFileSync(filename, "utf8");
 
         return this.read(text);
     }
 
     read(content: string): boolean {
         // remove UTF8 BOM
-        content = content.replace(/^\uFEFF/, '');
+        content = content.replace(/^\uFEFF/, "");
 
         let result: RegExpExecArray;
-        while (result = fileRe.exec(content)) {
-            if (result[1].startsWith('//')) continue;
+        while ((result = fileRe.exec(content))) {
+            if (result[1].startsWith("//")) continue;
             this.set(result[1], result[2]);
         }
 

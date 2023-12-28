@@ -1,6 +1,6 @@
-import * as gt from './types';
-import { tokenToString } from './scanner';
-import { getKindName, isToken} from './utils';
+import * as gt from "./types";
+import { tokenToString } from "./scanner";
+import { getKindName, isToken } from "./utils";
 
 export class Printer {
     output: string[];
@@ -9,27 +9,26 @@ export class Printer {
 
     private write(text: string) {
         if (this.emptyLine) {
-            this.output.push('\t'.repeat(this.indent));
+            this.output.push("\t".repeat(this.indent));
             this.emptyLine = false;
         }
         this.output.push(text);
     }
 
-    private whitespace(text: string = ' ') {
+    private whitespace(text: string = " ") {
         if (this.emptyLine) {
-            this.output.push('\t'.repeat(this.indent));
+            this.output.push("\t".repeat(this.indent));
             this.emptyLine = false;
         }
-        if (text === '\n') {
+        if (text === "\n") {
             this.newLine();
-        }
-        else {
+        } else {
             this.output.push(text);
         }
     }
 
     private newLine() {
-        this.output.push('\n');
+        this.output.push("\n");
         this.emptyLine = true;
     }
 
@@ -43,198 +42,182 @@ export class Printer {
 
     private emitNode(node: gt.Node) {
         switch (node.kind) {
-            case gt.SyntaxKind.FunctionDeclaration:
-            {
+            case gt.SyntaxKind.FunctionDeclaration: {
                 const func = <gt.FunctionDeclaration>node;
                 if (func.modifiers && func.modifiers.length > 0) {
-                    this.emitNodeList(func.modifiers, ' ');
-                    this.write(' ');
+                    this.emitNodeList(func.modifiers, " ");
+                    this.write(" ");
                 }
                 this.emitNode(func.type);
-                this.write(' ');
+                this.write(" ");
                 this.emitNode(func.name);
-                this.write('(');
-                this.emitNodeList(func.parameters, ',', ' ');
-                this.write(')');
+                this.write("(");
+                this.emitNodeList(func.parameters, ",", " ");
+                this.write(")");
                 if (func.body) {
                     this.newLine();
                     this.emitNode(func.body);
-                }
-                else {
-                    this.write(';');
+                } else {
+                    this.write(";");
                 }
                 this.newLine();
                 break;
             }
 
-            case gt.SyntaxKind.StructDeclaration:
-            {
+            case gt.SyntaxKind.StructDeclaration: {
                 const struct = <gt.StructDeclaration>node;
-                this.write('struct ');
+                this.write("struct ");
                 this.emitNode(struct.name);
-                this.write(' {');
+                this.write(" {");
                 this.newLine();
                 this.increaseIndent();
-                this.emitNodeList(struct.members, '', '\n', true);
+                this.emitNodeList(struct.members, "", "\n", true);
                 this.decreaseIndent();
-                this.write('};');
+                this.write("};");
                 this.newLine();
                 break;
             }
 
             case gt.SyntaxKind.VariableDeclaration:
-            case gt.SyntaxKind.PropertyDeclaration:
-            {
+            case gt.SyntaxKind.PropertyDeclaration: {
                 const variable = <gt.VariableDeclaration>node;
                 if (variable.modifiers && variable.modifiers.length > 0) {
-                    this.emitNodeList(variable.modifiers, ' ');
-                    this.write(' ');
+                    this.emitNodeList(variable.modifiers, " ");
+                    this.write(" ");
                 }
                 this.emitNode(variable.type);
-                this.write(' ');
+                this.write(" ");
                 this.emitNode(variable.name);
-                if (variable.kind === gt.SyntaxKind.VariableDeclaration && variable.initializer) {
-                    this.whitespace(' ');
-                    this.write('=');
-                    this.whitespace(' ');
+                if (
+                    variable.kind === gt.SyntaxKind.VariableDeclaration &&
+                    variable.initializer
+                ) {
+                    this.whitespace(" ");
+                    this.write("=");
+                    this.whitespace(" ");
                     this.emitNode(variable.initializer);
                 }
-                this.write(';');
+                this.write(";");
                 break;
             }
 
-            case gt.SyntaxKind.ParameterDeclaration:
-            {
+            case gt.SyntaxKind.ParameterDeclaration: {
                 const param = <gt.ParameterDeclaration>node;
                 if (param.modifiers && param.modifiers.length > 0) {
-                    this.emitNodeList(param.modifiers, ' ');
-                    this.write(' ');
+                    this.emitNodeList(param.modifiers, " ");
+                    this.write(" ");
                 }
                 this.emitNode(param.type);
-                this.write(' ');
+                this.write(" ");
                 this.emitNode(param.name);
                 break;
             }
 
-            case gt.SyntaxKind.TypedefDeclaration:
-            {
+            case gt.SyntaxKind.TypedefDeclaration: {
                 const typedef = <gt.TypedefDeclaration>node;
-                this.write('typedef ');
+                this.write("typedef ");
                 this.emitNode(typedef.type);
-                this.write(' ');
+                this.write(" ");
                 this.emitNode(typedef.name);
-                this.write(';');
+                this.write(";");
                 break;
             }
 
-            case gt.SyntaxKind.Identifier:
-            {
+            case gt.SyntaxKind.Identifier: {
                 const identifier = <gt.Identifier>node;
                 this.write(identifier.name);
                 break;
             }
 
             case gt.SyntaxKind.NumericLiteral:
-            case gt.SyntaxKind.StringLiteral:
-            {
+            case gt.SyntaxKind.StringLiteral: {
                 const literal = <gt.Literal>node;
                 this.write(literal.text);
                 break;
             }
 
-            case gt.SyntaxKind.ArrayType:
-            {
+            case gt.SyntaxKind.ArrayType: {
                 const type = <gt.ArrayTypeNode>node;
                 this.emitNode(type.elementType);
-                this.write('[');
+                this.write("[");
                 this.emitNode(type.size);
-                this.write(']');
+                this.write("]");
                 break;
             }
 
-            case gt.SyntaxKind.MappedType:
-            {
+            case gt.SyntaxKind.MappedType: {
                 const type = <gt.MappedTypeNode>node;
                 this.emitNode(type.returnType);
-                this.write('<');
-                this.emitNodeList(type.typeArguments, ',', ' ');
-                this.write('>');
+                this.write("<");
+                this.emitNodeList(type.typeArguments, ",", " ");
+                this.write(">");
                 break;
             }
 
-            case gt.SyntaxKind.BinaryExpression:
-            {
+            case gt.SyntaxKind.BinaryExpression: {
                 const expr = <gt.BinaryExpression>node;
                 this.emitNode(expr.left);
-                this.whitespace(' ');
+                this.whitespace(" ");
                 this.emitNode(expr.operatorToken);
-                this.whitespace(' ');
+                this.whitespace(" ");
                 this.emitNode(expr.right);
                 break;
             }
 
-            case gt.SyntaxKind.PrefixUnaryExpression:
-            {
+            case gt.SyntaxKind.PrefixUnaryExpression: {
                 const expr = <gt.PrefixUnaryExpression>node;
                 this.emitNode(expr.operator);
                 this.emitNode(expr.operand);
                 break;
             }
 
-            case gt.SyntaxKind.PostfixUnaryExpression:
-            {
+            case gt.SyntaxKind.PostfixUnaryExpression: {
                 const expr = <gt.PostfixUnaryExpression>node;
                 this.emitNode(expr.operand);
                 this.emitNode(expr.operator);
                 break;
             }
 
-            case gt.SyntaxKind.ParenthesizedExpression:
-            {
+            case gt.SyntaxKind.ParenthesizedExpression: {
                 const expr = <gt.ParenthesizedExpression>node;
-                this.write('(');
+                this.write("(");
                 this.emitNode(expr.expression);
-                this.write(')');
+                this.write(")");
                 break;
             }
 
-            case gt.SyntaxKind.CallExpression:
-            {
+            case gt.SyntaxKind.CallExpression: {
                 const expr = <gt.CallExpression>node;
                 this.emitNode(expr.expression);
-                this.write('(');
-                this.emitNodeList(expr.arguments, ',', ' ');
-                this.write(')');
+                this.write("(");
+                this.emitNodeList(expr.arguments, ",", " ");
+                this.write(")");
                 break;
             }
 
-            case gt.SyntaxKind.ElementAccessExpression:
-            {
+            case gt.SyntaxKind.ElementAccessExpression: {
                 const expr = <gt.ElementAccessExpression>node;
                 this.emitNode(expr.expression);
-                this.write('[');
+                this.write("[");
                 this.emitNode(expr.argumentExpression);
-                this.write(']');
+                this.write("]");
                 break;
             }
 
-            case gt.SyntaxKind.PropertyAccessExpression:
-            {
+            case gt.SyntaxKind.PropertyAccessExpression: {
                 const expr = <gt.PropertyAccessExpression>node;
                 this.emitNode(expr.expression);
-                this.write('.');
+                this.write(".");
                 this.emitNode(expr.name);
                 break;
             }
 
-            case gt.SyntaxKind.Unknown:
-            {
+            case gt.SyntaxKind.Unknown: {
                 // TODO: throw exception?
                 break;
             }
 
-            default:
-            {
+            default: {
                 if (isToken(node)) {
                     this.write(tokenToString(node.kind));
                     break;
@@ -245,10 +228,15 @@ export class Printer {
         }
     }
 
-    private emitNodeList(nodesList: ReadonlyArray<gt.Node>, textSeparator: string = undefined, whitespaceSeparator: string = undefined, includeSeparatorAtEnd: boolean = false) {
+    private emitNodeList(
+        nodesList: ReadonlyArray<gt.Node>,
+        textSeparator: string = undefined,
+        whitespaceSeparator: string = undefined,
+        includeSeparatorAtEnd: boolean = false,
+    ) {
         nodesList.forEach((node: gt.Node, index: number) => {
             this.emitNode(node);
-            if (includeSeparatorAtEnd || nodesList.length !== (index + 1)) {
+            if (includeSeparatorAtEnd || nodesList.length !== index + 1) {
                 if (textSeparator) {
                     this.write(textSeparator);
                 }
@@ -265,7 +253,7 @@ export class Printer {
     }
 
     private flush(): string {
-        const text = this.output.join('');
+        const text = this.output.join("");
         this.reset();
         return text;
     }

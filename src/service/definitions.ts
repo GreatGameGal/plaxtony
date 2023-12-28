@@ -1,23 +1,23 @@
-import * as gt from '../compiler/types';
-import { TypeChecker } from '../compiler/checker';
-import { AbstractProvider } from './provider';
-import { getSourceFileOfNode, isNamedDeclarationKind } from '../compiler/utils';
-import { getTokenAtPosition, getLineAndCharacterOfPosition, getNodeRange } from './utils';
-import * as lsp from 'vscode-languageserver';
+import * as gt from "../compiler/types";
+import { TypeChecker } from "../compiler/checker";
+import { AbstractProvider } from "./provider";
+import { getSourceFileOfNode, isNamedDeclarationKind } from "../compiler/utils";
+import { getTokenAtPosition, getNodeRange } from "./utils";
+import * as lsp from "vscode-languageserver";
 
 export class DefinitionProvider extends AbstractProvider {
     protected processIncludeStatement(inclStmt: gt.IncludeStatement) {
         const links: lsp.DefinitionLink[] = [];
 
         const qresults = this.store.qualifiedDocuments.get(
-            inclStmt.path.value.toLowerCase().replace(/\.galaxy$/, '')
+            inclStmt.path.value.toLowerCase().replace(/\.galaxy$/, ""),
         );
         if (!qresults) return;
 
         for (const qsfile of qresults.values()) {
             const targetRange = lsp.Range.create(
                 { line: 0, character: 0 },
-                { line: 0, character: 0 }
+                { line: 0, character: 0 },
             );
 
             links.push({
@@ -57,7 +57,10 @@ export class DefinitionProvider extends AbstractProvider {
         return links;
     }
 
-    public getDefinitionAt(uri: string, position: number): lsp.DefinitionLink[] | undefined {
+    public getDefinitionAt(
+        uri: string,
+        position: number,
+    ): lsp.DefinitionLink[] | undefined {
         const sourceFile = this.store.documents.get(uri);
         if (!sourceFile) return;
 
@@ -66,10 +69,11 @@ export class DefinitionProvider extends AbstractProvider {
 
         if (currentToken.kind === gt.SyntaxKind.StringLiteral) {
             if (currentToken.parent.kind === gt.SyntaxKind.IncludeStatement) {
-                return this.processIncludeStatement(<gt.IncludeStatement>currentToken.parent);
+                return this.processIncludeStatement(
+                    <gt.IncludeStatement>currentToken.parent,
+                );
             }
-        }
-        else if (currentToken.kind === gt.SyntaxKind.Identifier) {
+        } else if (currentToken.kind === gt.SyntaxKind.Identifier) {
             return this.processIdentifier(<gt.Identifier>currentToken);
         }
     }
